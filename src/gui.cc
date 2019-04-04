@@ -128,6 +128,41 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
 
 	// // FIXME: highlight bones that have been moused over
 	// current_bone_ = -1;
+
+    // if (!(action == GLFW_PRESS))
+	// 	return;
+	// if (current_button_ == GLFW_MOUSE_BUTTON_LEFT ) {
+		// std::cout << g_camera.look_[0] <<", "<< g_camera.look_[1] <<", " << g_camera.look_[2] << std::endl;
+        if(true){
+            std::cout << "mouse_x: " << mouse_x << " center_x: " << window_center_x << " mouse_y: " << mouse_x << " center_y: " << window_center_y << std::endl;
+            float delta_x = (mouse_x - window_center_x)/static_cast<float>(window_width) ;
+            std::cout << "delta_x: " << delta_x << std::endl;
+            float delta_y = (mouse_y - window_center_y)/static_cast<float>(window_height);
+            std::cout << "delta_y: " << delta_y<< std::endl;
+
+            yaw -= CAMERA_SPEED * 160 * delta_x ;
+            pitch += CAMERA_SPEED * 96 * delta_y;
+
+            // update look with the translation
+            look_ = {-sin(yaw) * cos(pitch), -sin(pitch), -cos(yaw) * cos(pitch)};
+            look_ = glm::normalize(look_);
+
+            tangent_ = {-cos(yaw), 0.0, sin(yaw)};
+            tangent_ = glm::normalize(tangent_);
+
+            up_ = glm::cross(look_, tangent_);
+            up_ = glm::normalize(up_);
+        }
+
+		// if(prev_mouse.prevX == 0.0 && prev_mouse.prevY == 0.0){
+		// 	prev_mouse.prevX = mouse_x;
+		// 	prev_mouse.prevY = mouse_x;
+		// } else if(glm::distance(glm::vec2(mouse_x, mouse_y), glm::vec2(prev_mouse.prevX, prev_mouse.prevY)) > 1.0) { // send angle to rotate to camera and reset prev_mouse
+		// 	// compute the angle from the prev
+		// 	float angle = atan(((float)prev_mouse.prevY - mouse_y)/((float)prev_mouse.prevX - mouse_x));
+		// 	g_camera.rotate_camera(angle, glm::cross(glm::vec3(((float)prev_mouse.prevY - mouse_y), ((float)prev_mouse.prevX - mouse_x), 0), g_camera.get_look()));
+		// }
+	// }
 }
 
 void GUI::mouseButtonCallback(int button, int action, int mods)

@@ -46,6 +46,13 @@ public:
 	bool isPlaying() const { return play_; }
 	float getCurrentPlayTime() const;
 
+    const float CAMERA_SPEED = .0001f;
+    int window_width = 800, window_height = 600;
+    float window_center_x = static_cast<float>(window_width) / 2.0;
+    float window_center_y = static_cast<float>(window_height) / 2.0; 
+
+
+
 private:
 	GLFWwindow* window_;
 	Mesh* mesh_;
@@ -55,7 +62,7 @@ private:
 	int preview_height_;
 
 	bool drag_state_ = false;
-	bool fps_mode_ = false;
+	bool fps_mode_ = true;
 	bool pose_changed_ = true;
 	bool transparent_ = false;
 	int current_bone_ = -1;
@@ -67,8 +74,10 @@ private:
 	float rotation_speed_ = 0.02f;
 	float zoom_speed_ = 0.1f;
 	float aspect_;
+    float yaw;
+    float pitch;
 
-	glm::vec3 eye_ = glm::vec3(0.0f, 0.1f, camera_distance_);
+	glm::vec3 eye_ = glm::vec3(0.0f, 6.1f, camera_distance_);
 	glm::vec3 up_ = glm::vec3(0.0f, 1.0f, 0.0f);
 	glm::vec3 look_ = glm::vec3(0.0f, 0.0f, -1.0f);
 	glm::vec3 tangent_ = glm::cross(look_, up_);

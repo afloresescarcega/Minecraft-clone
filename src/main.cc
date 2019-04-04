@@ -87,7 +87,10 @@ int main(int argc, char* argv[])
 	// 	return -1;
 	// }
 	GLFWwindow *window = init_glefw();
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 	GUI gui(window);
+
 
 	std::vector<glm::vec4> floor_vertices;
 	std::vector<glm::uvec3> floor_faces;
