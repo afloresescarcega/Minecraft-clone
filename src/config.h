@@ -4,6 +4,7 @@
 /*
  * Global variables go here.
  */
+// int nesting_level_ = 0;
 
 /*
  * Extra credit: what would happen if you set kNear to 1e-5? How to solve it?
@@ -13,6 +14,7 @@ const float kFar = 1000.0f;
 const float kFov = 45.0f;
 
 // Floor info.
+const float kTileLen = 5.0f;
 const float kFloorEps = 0.5 * (0.025 + 0.0175);
 const float kFloorXMin = -100.0f;
 const float kFloorXMax = 100.0f;
