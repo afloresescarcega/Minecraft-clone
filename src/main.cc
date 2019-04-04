@@ -255,7 +255,7 @@ int main(int argc, char* argv[])
 		// Setup some basic window stuff.
 		glfwGetFramebufferSize(window, &window_width, &window_height);
 		glViewport(0, 0, window_width, window_height);
-		glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+		glClearColor(.52f, .8f, .92f, 0.0f); // sky color
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_MULTISAMPLE);
 		glEnable(GL_BLEND);

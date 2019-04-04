@@ -15,7 +15,7 @@ void main() {
     if(pos.y < 0.0){ // elevated will squares will be black
         color = vec3(0.0, 0.0, 0.0);
     } else { // floor will be white
-        color = vec3(1.0, 1.0, 1.0);
+        color = vec3(.12, .19, .08); // green floor
     }
 	// vec3 color = mod(i + j, 2) * vec3(1.0, 1.0, 1.0);
 	float dot_nl = dot(normalize(light_direction), normalize(face_normal));
