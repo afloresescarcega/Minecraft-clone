@@ -80,9 +80,12 @@ void generate_geometry_helper(std::vector<glm::vec4>& obj_vertices,
 	}
 }
 
+
+// x, y, z
+// 40, 12, 40 cubes
 void create_floor(std::vector<glm::vec4>& floor_vertices, std::vector<glm::uvec3>& floor_faces)
 {
-    for(float y = -5.0f; y < 5.0f; y += (float)kTileLen){
+    for(float y = -30.0f; y < 30.0f; y += (float)kTileLen){
         for(float x = kFloorXMin; x < kFloorXMax; x += (float)kTileLen){
             for(float z = kFloorZMin; z < kFloorZMax; z += (float)kTileLen){
                 generate_geometry_helper(floor_vertices, floor_faces, glm::vec4(x, y, z, 1), 0, 0, floor_faces.size());
