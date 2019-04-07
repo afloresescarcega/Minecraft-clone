@@ -70,14 +70,14 @@ private:
 	float roll_speed_ = M_PI / 64.0f;
 	float last_x_ = 0.0f, last_y_ = 0.0f, current_x_ = 0.0f, current_y_ = 0.0f;
 	float camera_distance_ = 30.0;
-	float pan_speed_ = 0.1f;
+	float pan_speed_ = 0.5f;
 	float rotation_speed_ = 0.02f;
-	float zoom_speed_ = 0.1f;
+	float zoom_speed_ = 0.5f;
 	float aspect_;
     float yaw;
     float pitch;
 
-	glm::vec3 eye_ = glm::vec3(0.0f, 6.1f, camera_distance_);
+	glm::vec3 eye_ = glm::vec3(0.0f, 15.1f, camera_distance_);
 	glm::vec3 up_ = glm::vec3(0.0f, 1.0f, 0.0f);
 	glm::vec3 look_ = glm::vec3(0.0f, 0.0f, -1.0f);
 	glm::vec3 tangent_ = glm::cross(look_, up_);

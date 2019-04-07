@@ -141,7 +141,9 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
             std::cout << "delta_y: " << delta_y<< std::endl;
 
             yaw -= CAMERA_SPEED * 160 * delta_x ;
-            pitch += CAMERA_SPEED * 96 * delta_y;
+            // pitch += CAMERA_SPEED * 96 * delta_y;
+            pitch += CAMERA_SPEED * 120 * delta_y;
+
 
             // update look with the translation
             look_ = {-sin(yaw) * cos(pitch), -sin(pitch), -cos(yaw) * cos(pitch)};
