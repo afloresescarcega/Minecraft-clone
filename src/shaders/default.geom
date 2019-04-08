@@ -15,13 +15,18 @@ out vec4 camera_direction;
 out vec4 world_position;
 out vec4 vertex_normal;
 out vec2 uv_coords;
+out float height;
 
 float fade(in float x){
     return x * x * x * (x * (x * 6 - 15) + 10);
 }
 
+float my_lerp(in float a, in float b, in float t){
+    return a + t * (b - a);
+}
+
 float gradient(int hash_v, vec3 xyz){
-    int h = int(mod(hash_v, 16));
+    int h = hash_v & 15;
     float x = xyz.x;
     float y = xyz.y;
     float z = xyz.z;
@@ -30,16 +35,16 @@ float gradient(int hash_v, vec3 xyz){
         case  1: { return -x + y; }
         case  2: { return  x - y; }
         case  3: { return -x - y; }
-        case  4: { return  x + z; }
-        case  5: { return -x + z; }
-        case  6: { return  x - z; }
-        case  7: { return -x - z; }
-        case  8: { return  y + z; }
-        case  9: { return -y + z; }
-        case 10: { return  y - z; }
-        case 11: { return -y - z; }
-        case 12: { return  y + x; }
-        case 13: { return -y + z; }
+        case  4: { return  x + x; }
+        case  5: { return -x + x; }
+        case  6: { return  x - x; }
+        case  7: { return -x - x; }
+        case  8: { return  y + x; }
+        case  9: { return -y + x; }
+        case 10: { return  y - x; }
+        case 11: { return -y - x; }
+        case 12: { return  y + z; }
+        case 13: { return -y + x; }
         case 14: { return  y - x; }
         case 15: { return -y - z; }
     }
@@ -60,27 +65,45 @@ float perlin(in vec3 xyz){
     float local_y = y - floor(y);
     float local_z = z - floor(z);
 
-    int h0 = hash[hash[hash[        x_256 ]+                  y_256 ]+                  z_256 ];
-    int h1 = hash[hash[hash[        x_256 ]+                  y_256 ]+          int(mod(z_256 + 1, 256))];
-    int h2 = hash[hash[hash[        x_256 ]+int(mod(          y_256 + 1, 256))]+        z_256 ];
-    int h3 = hash[hash[hash[        x_256 ]+int(mod(          y_256 + 1, 256))]+int(mod(z_256 + 1, 256))];
-    int h4 = hash[hash[hash[int(mod(x_256 + 1, 256))]+        y_256 ]+                  z_256 ];
-    int h5 = hash[hash[hash[int(mod(x_256 + 1, 256))]+int(mod(y_256 + 1, 256))]+        z_256 ];
-    int h6 = hash[hash[hash[int(mod(x_256 + 1, 256))]+        y_256 ]+          int(mod(z_256 + 1, 256))];
-    int h7 = hash[hash[hash[int(mod(x_256 + 1, 256))]+int(mod(y_256 + 1, 256))]+int(mod(z_256 + 1, 256))];
+    
+
+    int h_x   = hash[        x_256 ];
+    int h_x_1 = hash[int(mod(x_256 + 1, 256))];
+    int h_y = y_256  & 255;
+    int h_y_1 = int(mod(y_256 + 1, 256)) & 255;
+    int h_z = z_256  & 255;
+    int h_z_1 = int(mod(z_256 + 1, 256)) & 255;
+
+    
+
+    int h0 = hash[hash[h_x  +  h_y]+   h_z ];
+    int h1 = hash[hash[h_x  +  h_y]+   h_z_1];
+    int h2 = hash[hash[h_x  +  h_y_1]+ h_z];
+    int h3 = hash[hash[h_x  +  h_y_1]+ h_z_1];
+    int h4 = hash[hash[h_x_1 + h_y]+   h_z];
+    int h5 = hash[hash[h_x_1 + h_y_1]+ h_z];
+    int h6 = hash[hash[h_x_1 + h_y]+   h_z_1];
+    int h7 = hash[hash[h_x_1 + h_y_1]+ h_z_1];
+
+
+    if((h1) > 255 || (h1) > 255){
+        return 1.0;
+    }
 
     float u = fade(local_x);
     float v = fade(local_y);
     float w = fade(local_z);
 
-    float x1_avg = mix(gradient(h0, vec3(local_x, local_y  , local_z)), gradient(h4, vec3(local_x-1, local_y  , local_z)),u);							
-    float x2_avg = mix(gradient(h2, vec3(local_x, local_y-1, local_z)), gradient(h5, vec3(local_x-1, local_y-1, local_z)),u);
-    float y1_avg = mix(x1_avg, x2_avg, v);
-          x1_avg = mix(gradient(h1, vec3(local_x, local_y  , local_z-1)), gradient(h6, vec3(local_x-1, local_y  , local_z-1)), u);
-          x2_avg = mix(gradient(h3, vec3(local_x, local_y-1, local_z-1)), gradient(h7, vec3(local_x-1, local_y-1, local_z-1)), u);
-    float y2_avg = mix (x1_avg, x2_avg, v);
+    float x1_avg = my_lerp(gradient(h0, vec3(local_x, local_y  , local_z)), gradient(h4, vec3(local_x-1, local_y  , local_z)),u);							
+    float x2_avg = my_lerp(gradient(h2, vec3(local_x, local_y-1, local_z)), gradient(h5, vec3(local_x-1, local_y-1, local_z)),u);
+    float y1_avg = my_lerp(x1_avg, x2_avg, v);
+          x1_avg = my_lerp(gradient(h1, vec3(local_x, local_y  , local_z-1)), gradient(h6, vec3(local_x-1, local_y  , local_z-1)), u);
+          x2_avg = my_lerp(gradient(h3, vec3(local_x, local_y-1, local_z-1)), gradient(h7, vec3(local_x-1, local_y-1, local_z-1)), u);
+    float y2_avg = my_lerp (x1_avg, x2_avg, v);
             
-    return (mix (y1_avg, y2_avg, w)+1)/2;
+    return (my_lerp(y1_avg, y2_avg, w)+1)/2;
+    return xyz.y/ 30.0;
+
 }
 void main() {
 	int n = 0;
@@ -114,9 +137,9 @@ void main() {
     temp[2] = vec4(c, 1.0);
     
     float new_height = perlin(vec3(max_x, max_y, max_z));
-    temp[0].y = temp[0].y + new_height;
-    temp[1].y = temp[1].y + new_height;
-    temp[2].y = temp[2].y + new_height;
+    temp[0].y = temp[0].y;
+    temp[1].y = temp[1].y;
+    temp[2].y = temp[2].y;
 
 	face_normal = normalize(vec4(normalize(cross(u, v)), 0.0));
 	for (n = 0; n < gl_in.length(); n++) {
@@ -126,12 +149,12 @@ void main() {
         vertex_normal = vs_normal[n];
         uv_coords = vs_uv[n];
         gl_Position = projection * view * model * temp[n];
-
+        height = new_height;
         // conditionally render a whole cube if one of
         // the max_x or max_y is odd
-        // if(mod(max_x, 2) != 0 && mod(max_z, 2) != 0){
+        //if( perlin(vec3(temp[n].x, temp[n].y, temp[n].z)) <= 0.5){
             EmitVertex();
-        // }
+        //}
 	}
 	EndPrimitive();
 }

@@ -134,11 +134,11 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
 	// if (current_button_ == GLFW_MOUSE_BUTTON_LEFT ) {
 		// std::cout << g_camera.look_[0] <<", "<< g_camera.look_[1] <<", " << g_camera.look_[2] << std::endl;
         if(true){
-            std::cout << "mouse_x: " << mouse_x << " center_x: " << window_center_x << " mouse_y: " << mouse_x << " center_y: " << window_center_y << std::endl;
+            // std::cout << "mouse_x: " << mouse_x << " center_x: " << window_center_x << " mouse_y: " << mouse_x << " center_y: " << window_center_y << std::endl;
             float delta_x = (mouse_x - window_center_x)/static_cast<float>(window_width) ;
-            std::cout << "delta_x: " << delta_x << std::endl;
+            // std::cout << "delta_x: " << delta_x << std::endl;
             float delta_y = (mouse_y - window_center_y)/static_cast<float>(window_height);
-            std::cout << "delta_y: " << delta_y<< std::endl;
+            // std::cout << "delta_y: " << delta_y<< std::endl;
 
             yaw -= CAMERA_SPEED * 160 * delta_x ;
             // pitch += CAMERA_SPEED * 96 * delta_y;

@@ -77,7 +77,7 @@ private:
     float yaw;
     float pitch;
 
-	glm::vec3 eye_ = glm::vec3(0.0f, 15.1f, camera_distance_);
+	glm::vec3 eye_ = glm::vec3(-100.0f, 32.1f, 100.0f);
 	glm::vec3 up_ = glm::vec3(0.0f, 1.0f, 0.0f);
 	glm::vec3 look_ = glm::vec3(0.0f, 0.0f, -1.0f);
 	glm::vec3 tangent_ = glm::cross(look_, up_);
