@@ -57,10 +57,12 @@ float perlin(in vec3 xyz){
     float y = xyz.y;
     float z = xyz.z;
 
+    // We need to index into a 256 x 256 hash table
     int x_256 = int(mod(x, 256));
     int y_256 = int(mod(y, 256));
     int z_256 = int(mod(z, 256));
 
+    // Coordinates within the block should range from 0.0 to 1.0
     float local_x = x - floor(x);
     float local_y = y - floor(y);
     float local_z = z - floor(z);
@@ -69,26 +71,22 @@ float perlin(in vec3 xyz){
 
     int h_x   = hash[        x_256 ];
     int h_x_1 = hash[int(mod(x_256 + 1, 256))];
-    int h_y = y_256  & 255;
+    int h_y = y_256;
     int h_y_1 = int(mod(y_256 + 1, 256)) & 255;
     int h_z = z_256  & 255;
     int h_z_1 = int(mod(z_256 + 1, 256)) & 255;
 
     
 
-    int h0 = hash[hash[h_x  +  h_y]+   h_z ];
-    int h1 = hash[hash[h_x  +  h_y]+   h_z_1];
-    int h2 = hash[hash[h_x  +  h_y_1]+ h_z];
-    int h3 = hash[hash[h_x  +  h_y_1]+ h_z_1];
-    int h4 = hash[hash[h_x_1 + h_y]+   h_z];
-    int h5 = hash[hash[h_x_1 + h_y_1]+ h_z];
-    int h6 = hash[hash[h_x_1 + h_y]+   h_z_1];
-    int h7 = hash[hash[h_x_1 + h_y_1]+ h_z_1];
+    int h0 = hash[hash[(h_x  +  h_y) & 255]+   h_z ];
+    int h1 = hash[hash[(h_x  +  h_y) & 255]+   h_z_1];
+    int h2 = hash[hash[(h_x  +  h_y_1) & 255]+ h_z];
+    int h3 = hash[hash[(h_x  +  h_y_1) & 255]+ h_z_1];
+    int h4 = hash[hash[(h_x_1 + h_y) & 255]+   h_z];
+    int h5 = hash[hash[(h_x_1 + h_y_1) & 255]+ h_z];
+    int h6 = hash[hash[(h_x_1 + h_y) & 255]+   h_z_1];
+    int h7 = hash[hash[(h_x_1 + h_y_1) & 255]+ h_z_1];
 
-
-    if((h1) > 255 || (h1) > 255){
-        return 1.0;
-    }
 
     float u = fade(local_x);
     float v = fade(local_y);
@@ -102,18 +100,33 @@ float perlin(in vec3 xyz){
     float y2_avg = my_lerp (x1_avg, x2_avg, v);
             
     return (my_lerp(y1_avg, y2_avg, w)+1)/2;
-    return xyz.y/ 30.0;
+    // return xyz.y / 30.0;
+    unsigned int ux = uint(x);
+    unsigned int uy = uint(y);
+    unsigned int uz = uint(z);
+
+    unsigned int my_h = ux;
+    my_h = my_h ^ (my_h << 13);
+    my_h = my_h ^ (my_h >> 17);
+    my_h = my_h ^ (my_h << 5);
+    return my_h & uint(255); 
 
 }
 void main() {
 	int n = 0;
+
+    // Vertices of the triangle ------
 	vec3 a = gl_in[0].gl_Position.xyz;
 	vec3 b = gl_in[1].gl_Position.xyz;
 	vec3 c = gl_in[2].gl_Position.xyz;
+
+    // Normals -----------------------
 	vec3 u = normalize(b - a);
 	vec3 v = normalize(c - a);
 
-    // checkerboarding
+    /*
+    * Consistent manner of choosing a same point for two triangles on a plane
+    */
     float max_x = max(a.x, max(b.x, c.x));
     float max_y = max(a.y, max(b.y, c.y));
     float max_z = max(a.z, max(b.z, c.z));
@@ -136,7 +149,15 @@ void main() {
     temp[1] = vec4(b, 1.0);
     temp[2] = vec4(c, 1.0);
     
-    float new_height = perlin(vec3(max_x, max_y, max_z));
+    // float new_height = perlin(vec3(max_x, max_y, max_z));
+
+    
+    float new_height;
+    if(max_x < 1.0){
+        new_height = a.x;    
+    } else {
+        new_height = 1 / a.x;
+    }
     temp[0].y = temp[0].y;
     temp[1].y = temp[1].y;
     temp[2].y = temp[2].y;
@@ -152,7 +173,7 @@ void main() {
         height = new_height;
         // conditionally render a whole cube if one of
         // the max_x or max_y is odd
-        //if( perlin(vec3(temp[n].x, temp[n].y, temp[n].z)) <= 0.5){
+        //if( perlin(vec3(max_x, max_y, max_z)) <= 0.5){
             EmitVertex();
         //}
 	}
