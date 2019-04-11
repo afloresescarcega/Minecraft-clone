@@ -3,6 +3,10 @@
 
 #include <iostream>
 
+#include "PerlinNoise.hpp"
+
+siv::PerlinNoise *pn = new siv::PerlinNoise(3000);
+
 
 float fade(float x){
     return x * x * x * (x * (x * 6 - 15) + 10);
@@ -110,76 +114,83 @@ void generate_geometry_helper(std::vector<glm::vec4>& obj_vertices,
 						  int depth,
 						  int faces_offset)
 {
-	float cube_size = 0.5f / powf(3.0f, (float)depth);
+	// float cube_size = 0.5f / powf(3.0f, (float)depth);
 
 	// If our recursion level is 0, just draw a cube WITH the scale we need.
-	if (nesting_level == 0) {
+	// if (nesting_level == 0) {
 
-		obj_vertices.push_back(glm::vec4(origin.x - kTileLen, origin.y - kTileLen, origin.z - kTileLen, 1));
-		obj_vertices.push_back(glm::vec4(origin.x - kTileLen, origin.y + kTileLen, origin.z - kTileLen, 1));
-		obj_vertices.push_back(glm::vec4(origin.x + kTileLen, origin.y + kTileLen, origin.z - kTileLen, 1));
-		obj_vertices.push_back(glm::vec4(origin.x + kTileLen, origin.y - kTileLen, origin.z - kTileLen, 1));
+		/*0*/ obj_vertices.push_back(glm::vec4(origin.x, origin.y, origin.z, 1));
+		/*1*/ obj_vertices.push_back(glm::vec4(origin.x + kTileLen, origin.y, origin.z, 1));
+		/*2*/ obj_vertices.push_back(glm::vec4(origin.x + kTileLen, origin.y + kTileLen, origin.z, 1));
+		/*3*/ obj_vertices.push_back(glm::vec4(origin.x, origin.y + kTileLen, origin.z, 1));
 
-		obj_vertices.push_back(glm::vec4(origin.x - kTileLen, origin.y - kTileLen, origin.z + kTileLen, 1));
-		obj_vertices.push_back(glm::vec4(origin.x - kTileLen, origin.y + kTileLen, origin.z + kTileLen, 1));
-		obj_vertices.push_back(glm::vec4(origin.x + kTileLen, origin.y + kTileLen, origin.z + kTileLen, 1));
-		obj_vertices.push_back(glm::vec4(origin.x + kTileLen, origin.y - kTileLen, origin.z + kTileLen, 1));
+		/*4*/ obj_vertices.push_back(glm::vec4(origin.x + kTileLen, origin.y, origin.z + kTileLen, 1));
+		/*5*/ obj_vertices.push_back(glm::vec4(origin.x, origin.y, origin.z + kTileLen, 1));
+		/*6*/ obj_vertices.push_back(glm::vec4(origin.x + kTileLen, origin.y + kTileLen, origin.z + kTileLen, 1));
+		/*7*/ obj_vertices.push_back(glm::vec4(origin.x, origin.y + kTileLen, origin.z + kTileLen, 1));
 
-		obj_faces.push_back(glm::uvec3(faces_offset, faces_offset+1, faces_offset+2));
-		obj_faces.push_back(glm::uvec3(faces_offset, faces_offset+2, faces_offset+3));
+        // Arbitrarily chosen front
+		obj_faces.push_back(glm::uvec3(faces_offset + 2, faces_offset + 1, faces_offset));
+		obj_faces.push_back(glm::uvec3(faces_offset + 3, faces_offset + 2, faces_offset));
 
-		obj_faces.push_back(glm::uvec3(faces_offset+6, faces_offset+5, faces_offset+4));
-		obj_faces.push_back(glm::uvec3(faces_offset+7, faces_offset+6, faces_offset+4));
+        // Arbitrarily chosen back
+		obj_faces.push_back(glm::uvec3(faces_offset + 7, faces_offset + 5, faces_offset + 4));
+		obj_faces.push_back(glm::uvec3(faces_offset + 6, faces_offset + 7, faces_offset + 4));
 
-		obj_faces.push_back(glm::uvec3(faces_offset+3, faces_offset+2, faces_offset+6));
-		obj_faces.push_back(glm::uvec3(faces_offset+3, faces_offset+6, faces_offset+7));
+        // Arbitrarily chosen top
+		obj_faces.push_back(glm::uvec3(faces_offset + 6, faces_offset+2, faces_offset+3));
+		obj_faces.push_back(glm::uvec3(faces_offset + 7, faces_offset+6, faces_offset+3));
 
-		obj_faces.push_back(glm::uvec3(faces_offset+4, faces_offset+5, faces_offset+1));
-		obj_faces.push_back(glm::uvec3(faces_offset+4, faces_offset+1, faces_offset));
+        // Arbitrarily chosen bottom
+		obj_faces.push_back(glm::uvec3(faces_offset+1, faces_offset+4, faces_offset+5));
+		obj_faces.push_back(glm::uvec3(faces_offset, faces_offset+1, faces_offset+5));
 
-		obj_faces.push_back(glm::uvec3(faces_offset+1, faces_offset+5, faces_offset+2));
-		obj_faces.push_back(glm::uvec3(faces_offset+5, faces_offset+6, faces_offset+2));
+        // Arbitrarily chosen right
+		obj_faces.push_back(glm::uvec3(faces_offset + 6, faces_offset+4, faces_offset+1));
+		obj_faces.push_back(glm::uvec3(faces_offset + 2, faces_offset+6, faces_offset+1));
 
-		obj_faces.push_back(glm::uvec3(faces_offset+4, faces_offset,   faces_offset+3));
-		obj_faces.push_back(glm::uvec3(faces_offset+4, faces_offset+3, faces_offset+7));
-	} else {
-		// x
-		for (int i = 0; i < 3; i++) {
-			// y
-			for (int j = 0; j < 3; j++) {
-				// z
-				for (int k = 0; k < 3; k++) {
-					if ((i == 1 && i == j) || (j == 1 && j == k) || (k == 1 && i == k)) {
-						// Skip inner cube.
-					} else {
-						std::vector<glm::vec4> obj_verticesR;
-						std::vector<glm::uvec3> obj_facesR;
+        // Arbitrarily chosen left 
+		obj_faces.push_back(glm::uvec3(faces_offset + 3, faces_offset, faces_offset + 5));
+		obj_faces.push_back(glm::uvec3(faces_offset + 7, faces_offset + 3, faces_offset + 5));
+	// } 
+    // else {
+	// 	// x
+	// 	for (int i = 0; i < 3; i++) {
+	// 		// y
+	// 		for (int j = 0; j < 3; j++) {
+	// 			// z
+	// 			for (int k = 0; k < 3; k++) {
+	// 				// if ((i == 1 && i == j) || (j == 1 && j == k) || (k == 1 && i == k)) {
+	// 				// 	// Skip inner cube.
+	// 				// } else {
+	// 					// std::vector<glm::vec4> obj_verticesR;
+	// 					// std::vector<glm::uvec3> obj_facesR;
 
-						float signX = i - 1;
-						float signY = j - 1;
-						float signZ = k - 1;
-						float originX = origin.x + (kTileLen - (0.5f / powf(3.0f, (float)depth+1.0f))) * signX;
-						float originY = origin.y + (kTileLen - (0.5f / powf(3.0f, (float)depth+1.0f))) * signY;
-						float originZ = origin.z + (kTileLen - (0.5f / powf(3.0f, (float)depth+1.0f))) * signZ;
+	// 					// float signX = i - 1;
+	// 					// float signY = j - 1;
+	// 					// float signZ = k - 1;
+	// 					// float originX = origin.x + (kTileLen - (0.5f / powf(3.0f, (float)depth+1.0f))) * signX;
+	// 					// float originY = origin.y + (kTileLen - (0.5f / powf(3.0f, (float)depth+1.0f))) * signY;
+	// 					// float originZ = origin.z + (kTileLen - (0.5f / powf(3.0f, (float)depth+1.0f))) * signZ;
 
-						int new_nesting_level = nesting_level - 1;
-						int new_depth = depth + 1;
-						glm::vec4 originR(originX, originY, originZ, 1);
-						generate_geometry_helper(obj_verticesR,
-												obj_facesR, 
-												originR,
-												new_nesting_level,
-												new_depth,
-												faces_offset);
+	// 					// // int new_nesting_level = nesting_level - 1;
+	// 					// // int new_depth = depth + 1;
+	// 					// // glm::vec4 originR(originX, originY, originZ, 1);
+	// 					// // generate_geometry_helper(obj_verticesR,
+	// 					// // 						obj_facesR, 
+	// 					// // 						originR,
+	// 					// // 						new_nesting_level,
+	// 					// // 						new_depth,
+	// 					// // 						faces_offset);
 
-						copy(obj_verticesR.begin(), obj_verticesR.end(), back_inserter(obj_vertices));
-						copy(obj_facesR.begin(), obj_facesR.end(), back_inserter(obj_faces));
-						faces_offset = faces_offset + obj_verticesR.size();
-					}
-				}
-			}
-		}
-	}
+	// 					// copy(obj_verticesR.begin(), obj_verticesR.end(), back_inserter(obj_vertices));
+	// 					// copy(obj_facesR.begin(), obj_facesR.end(), back_inserter(obj_faces));
+	// 					// faces_offset = faces_offset + obj_verticesR.size();
+	// 				// }
+	// 			}
+	// 		}
+	// 	}
+	// }
 }
 
 
@@ -187,14 +198,27 @@ void generate_geometry_helper(std::vector<glm::vec4>& obj_vertices,
 // 40, 12, 40 cubes
 void create_floor(std::vector<glm::vec4>& floor_vertices, std::vector<glm::uvec3>& floor_faces)
 {
-    for(float y = -30.0f; y < 30.0f; y += (float)kTileLen){
-        for(float x = kFloorXMin; x < kFloorXMax; x += (float)kTileLen){
-            for(float z = kFloorZMin; z < kFloorZMax; z += (float)kTileLen){
-                float height = perlin(glm::vec3(x, y, z));
-                std::cout << "This is the height: " << height << std::endl;
-                if(height > .5f){
+    // for(float y = -30.0f; y < 30.0f; y += (float)kTileLen){
+    //     for(float x = kFloorXMin; x < kFloorXMax; x += (float)kTileLen){
+    //         for(float z = kFloorZMin; z < kFloorZMax; z += (float)kTileLen){
+    //             double height = pn->octaveNoise((double) x + .553, (double) y + .553, (double) z + .553, 9);
+    //             std::cout << "This is the height: " << height << std::endl;
+    //             if(height > 0.0f){
+    //                 generate_geometry_helper(floor_vertices, floor_faces, glm::vec4(x, y, z, 1), 0, 0, floor_faces.size());
+    //             }
+    //         }
+    //     }
+    // }
+
+    // debugging single cube
+    for(float y = -5.0f; y <0.0f; y += (float)kTileLen){
+        for(float x = -5.0f; x <0.0f; x += (float)kTileLen){
+            for(float z = -5.0f; z <0.0f; z += (float)kTileLen){
+                // double height = pn->octaveNoise((double) x + .553, (double) y + .553, (double) z + .553, 9);
+                // std::cout << "This is the height: " << height << std::endl;
+                // if(height > 0.0f){
                     generate_geometry_helper(floor_vertices, floor_faces, glm::vec4(x, y, z, 1), 0, 0, floor_faces.size());
-                }
+                // }
             }
         }
     }
