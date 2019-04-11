@@ -6,7 +6,6 @@
 #include <debuggl.h>
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/transform.hpp>
 
 namespace {
@@ -93,78 +92,77 @@ void GUI::keyCallback(int key, int scancode, int action, int mods)
 
 void GUI::mousePosCallback(double mouse_x, double mouse_y)
 {
-	// last_x_ = current_x_;
-	// last_y_ = current_y_;
+    // if(last_x_ == 0.0f && last_y_ == 0.0f){
+    //     last_x_= mouse_x;
+    //     last_y_ = mouse_y;
+    // } else {
+    //     last_x_ = current_x_;
+    //     last_y_ = current_y_;
+    // }
+	
 	// current_x_ = mouse_x;
 	// current_y_ = window_height_ - mouse_y;
 	// float delta_x = current_x_ - last_x_;
 	// float delta_y = current_y_ - last_y_;
-	// if (sqrt(delta_x * delta_x + delta_y * delta_y) < 1e-15)
-	// 	return;
-	// if (mouse_x > view_width_)
-	// 	return ;
-	// glm::vec3 mouse_direction = glm::normalize(glm::vec3(delta_x, delta_y, 0.0f));
-	// glm::vec2 mouse_start = glm::vec2(last_x_, last_y_);
-	// glm::vec2 mouse_end = glm::vec2(current_x_, current_y_);
-	// glm::uvec4 viewport = glm::uvec4(0, 0, view_width_, view_height_);
 
-	// bool drag_camera = drag_state_ && current_button_ == GLFW_MOUSE_BUTTON_RIGHT;
-	// bool drag_bone = drag_state_ && current_button_ == GLFW_MOUSE_BUTTON_LEFT;
-
-	// if (drag_camera) {
-	// 	glm::vec3 axis = glm::normalize(
-	// 			orientation_ *
-	// 			glm::vec3(mouse_direction.y, -mouse_direction.x, 0.0f)
-	// 			);
-	// 	orientation_ =
-	// 		glm::mat3(glm::rotate(rotation_speed_, axis) * glm::mat4(orientation_));
-	// 	tangent_ = glm::column(orientation_, 0);
-	// 	up_ = glm::column(orientation_, 1);
-	// 	look_ = glm::column(orientation_, 2);
-	// } else if (drag_bone && current_bone_ != -1) {
-	// 	// FIXME: Handle bone rotation
-	// 	return ;
-	// }
-
-	// // FIXME: highlight bones that have been moused over
-	// current_bone_ = -1;
-
-    // if (!(action == GLFW_PRESS))
-	// 	return;
-	// if (current_button_ == GLFW_MOUSE_BUTTON_LEFT ) {
-		// std::cout << g_camera.look_[0] <<", "<< g_camera.look_[1] <<", " << g_camera.look_[2] << std::endl;
-        if(true){
-            // std::cout << "mouse_x: " << mouse_x << " center_x: " << window_center_x << " mouse_y: " << mouse_x << " center_y: " << window_center_y << std::endl;
-            float delta_x = (mouse_x - window_center_x)/static_cast<float>(window_width) ;
-            // std::cout << "delta_x: " << delta_x << std::endl;
-            float delta_y = (mouse_y - window_center_y)/static_cast<float>(window_height);
-            // std::cout << "delta_y: " << delta_y<< std::endl;
-
-            yaw -= CAMERA_SPEED * 160 * delta_x ;
-            // pitch += CAMERA_SPEED * 96 * delta_y;
-            pitch += CAMERA_SPEED * 120 * delta_y;
+    // yaw -= CAMERA_SPEED * delta_x ;
+    // // pitch += CAMERA_SPEED * 96 * delta_y;
+    // pitch -= CAMERA_SPEED * delta_y;
 
 
-            // update look with the translation
-            look_ = {-sin(yaw) * cos(pitch), -sin(pitch), -cos(yaw) * cos(pitch)};
-            look_ = glm::normalize(look_);
+    // // update look with the translation
 
-            tangent_ = {-cos(yaw), 0.0, sin(yaw)};
-            tangent_ = glm::normalize(tangent_);
+    // glm::quat rotPitch = glm::angleAxis(pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+    // glm::quat rotYaw = glm::angleAxis(yaw, glm::vec3(0.0f, 1.0f, 0.0f));
 
-            up_ = glm::cross(look_, tangent_);
-            up_ = glm::normalize(up_);
-        }
+    // glm::quat orientation = rotPitch * rotYaw;
+    // orientation = glm::normalize(orientation);
+    // glm::mat4 rot = glm::mat4_cast(orientation);
 
-		// if(prev_mouse.prevX == 0.0 && prev_mouse.prevY == 0.0){
-		// 	prev_mouse.prevX = mouse_x;
-		// 	prev_mouse.prevY = mouse_x;
-		// } else if(glm::distance(glm::vec2(mouse_x, mouse_y), glm::vec2(prev_mouse.prevX, prev_mouse.prevY)) > 1.0) { // send angle to rotate to camera and reset prev_mouse
-		// 	// compute the angle from the prev
-		// 	float angle = atan(((float)prev_mouse.prevY - mouse_y)/((float)prev_mouse.prevX - mouse_x));
-		// 	g_camera.rotate_camera(angle, glm::cross(glm::vec3(((float)prev_mouse.prevY - mouse_y), ((float)prev_mouse.prevX - mouse_x), 0), g_camera.get_look()));
-		// }
-	// }
+    // glm::mat4 trans = glm::mat4(1.0f);
+    // trans = glm::translate(trans, -1.0f * eye_);
+
+    // glm::mat4 transform = rot * trans;
+
+    // look_ = glm::vec3(transform * glm::vec4(look_, 1.0f));
+    // up_ = glm::vec3(transform * glm::vec4(up_, 1.0f));
+    // tangent_ = glm::vec3(transform * glm::vec4(tangent_, 1.0f));
+
+    last_x_ = current_x_;
+	last_y_ = current_y_;
+	current_x_ = mouse_x;
+	current_y_ = window_height_ - mouse_y;
+	float delta_x = current_x_ - last_x_;
+	float delta_y = current_y_ - last_y_;
+	if (sqrt(delta_x * delta_x + delta_y * delta_y) < 1e-15)
+		return;
+	if (mouse_x > view_width_)
+		return ;
+	glm::vec3 mouse_direction = glm::normalize(glm::vec3(delta_x, delta_y, 0.0f));
+	glm::vec2 mouse_start = glm::vec2(last_x_, last_y_);
+	glm::vec2 mouse_end = glm::vec2(current_x_, current_y_);
+	glm::uvec4 viewport = glm::uvec4(0, 0, view_width_, view_height_);
+
+	bool drag_camera = drag_state_ && current_button_ == GLFW_MOUSE_BUTTON_RIGHT;
+	bool drag_bone = drag_state_ && current_button_ == GLFW_MOUSE_BUTTON_LEFT;
+
+		glm::vec3 axis = glm::normalize(
+				orientation_ *
+				glm::vec3(mouse_direction.y, -mouse_direction.x, 0.0f)
+				);
+		
+		glm::fquat new_rot = glm::quat_cast(
+							(glm::rotate(rotation_speed_, axis))
+					 );
+		camera_rot_ = new_rot * camera_rot_;
+
+		orientation_ =
+			glm::mat3((glm::rotate(rotation_speed_, axis)) * glm::mat4(orientation_));
+		
+		tangent_ = glm::column(orientation_, 0);
+		up_ = glm::column(orientation_, 1);
+		look_ = glm::column(orientation_, 2);
+
 }
 
 void GUI::mouseButtonCallback(int button, int action, int mods)

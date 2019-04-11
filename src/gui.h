@@ -3,6 +3,8 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+#include <glm/gtx/quaternion.hpp>
 #include <GLFW/glfw3.h>
 
 struct Mesh;
@@ -46,10 +48,12 @@ public:
 	bool isPlaying() const { return play_; }
 	float getCurrentPlayTime() const;
 
-    const float CAMERA_SPEED = .0001f;
+    const float CAMERA_SPEED = .00001f;
     int window_width = 800, window_height = 600;
     float window_center_x = static_cast<float>(window_width) / 2.0;
     float window_center_y = static_cast<float>(window_height) / 2.0; 
+    glm::quat camera_rot_ = glm::quat_cast(glm::mat4(1.0f));
+	glm::quat last_rot = glm::quat_cast(glm::mat4(1.0f));
 
 
 
@@ -71,13 +75,13 @@ private:
 	float last_x_ = 0.0f, last_y_ = 0.0f, current_x_ = 0.0f, current_y_ = 0.0f;
 	float camera_distance_ = 30.0;
 	float pan_speed_ = 0.5f;
-	float rotation_speed_ = 0.02f;
+	float rotation_speed_ = 0.03f;
 	float zoom_speed_ = 0.5f;
 	float aspect_;
     float yaw;
     float pitch;
 
-	glm::vec3 eye_ = glm::vec3(-100.0f, 32.1f, 100.0f);
+	glm::vec3 eye_ = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 up_ = glm::vec3(0.0f, 1.0f, 0.0f);
 	glm::vec3 look_ = glm::vec3(0.0f, 0.0f, -1.0f);
 	glm::vec3 tangent_ = glm::cross(look_, up_);
