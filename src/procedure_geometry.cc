@@ -211,13 +211,17 @@ void create_floor(std::vector<glm::vec4>& floor_vertices, std::vector<glm::uvec3
     // }
 
     // debugging single cube
-    for(float y = -5.0f; y <0.0f; y += (float)kTileLen){
-        for(float x = -5.0f; x <0.0f; x += (float)kTileLen){
-            for(float z = -5.0f; z <0.0f; z += (float)kTileLen){
+    int counter = 0;
+    for(float x = 0.0f; x < 10.0f; x += (float)kTileLen){
+        for(float y = 0.0f; y < 10.0f; y += (float)kTileLen){
+            for(float z = 0.0f; z < 10.0f; z += (float)kTileLen){
                 // double height = pn->octaveNoise((double) x + .553, (double) y + .553, (double) z + .553, 9);
                 // std::cout << "This is the height: " << height << std::endl;
                 // if(height > 0.0f){
-                    generate_geometry_helper(floor_vertices, floor_faces, glm::vec4(x, y, z, 1), 0, 0, floor_faces.size());
+                    
+                    std::cout << "x: " << x << " y: " << y << " z: " << z << " with faces " <<  counter << " total " << floor_faces.size() << std::endl;
+                    generate_geometry_helper(floor_vertices, floor_faces, glm::vec4(x, y, z, 1), 0, 0, counter);
+                    counter += 12;
                 // }
             }
         }
