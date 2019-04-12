@@ -109,8 +109,8 @@ float perlin(glm::vec3 xyz){
 }
 
 void generate_geometry_helper(std::vector<glm::vec4>& obj_vertices,
-                          std::vector<glm::uvec3>& obj_faces, 
-						  glm::vec4 origin,
+                        std::vector<glm::uvec3>& obj_faces,
+						glm::vec4 origin,
 						  int nesting_level,
 						  int depth,
 						  int vertex_offset)
@@ -213,21 +213,21 @@ void create_floor(std::vector<glm::vec4>& floor_vertices, std::vector<glm::uvec3
 
     // debugging single cube
     int counter = 0;
-    for(float z = 0.0f; z < 30.0f; z += (float)kTileLen){
-        for(float y = 0.0f; y < 30.0f; y += (float)kTileLen){
-            for(float x = 0.0f; x < 30.0f; x += (float)kTileLen){
-                double height = pn->octaveNoise((double) x + .553, (double) y + .553, (double) z + .553, 9);
-                std::cout << "This is the height: " << height << std::endl;
+    for(float z = 0.0f; z < 100.0f; z += (float)kTileLen){
+        for(float y = 0.0f; y < 50.0f; y += (float)kTileLen){
+            for(float x = 0.0f; x < 100.0f; x += (float)kTileLen){
+                double height = pn->octaveNoise((double) x * (1/30.0) + .001, (double) y * (1/30.0) + .001, (double) z * (1/30.0) + .001, 3);
+                // std::cout << "This is the height: " << height << std::endl;
                 if(height > 0.0f){
                     
-                    std::cout << "x: " << x << " y: " << y << " z: " << z << " with faces " <<  counter << " total " << floor_faces.size() << std::endl;
+                    // std::cout << "x: " << x << " y: " << y << " z: " << z << " with faces " <<  counter << " total " << floor_faces.size() << std::endl;
                     generate_geometry_helper(floor_vertices, floor_faces, glm::vec4(x, y, z, 1), 0, 0, counter);
                     counter += 8;
                 }
             }
         }
     }
-    
+ 
 
 	// floor_vertices.push_back(glm::vec4(kFloorXMin, kFloorY, kFloorZMax, 1.0f));
 	// floor_vertices.push_back(glm::vec4(kFloorXMax, kFloorY, kFloorZMax, 1.0f));
