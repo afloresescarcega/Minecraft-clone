@@ -134,6 +134,8 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
 	current_y_ = window_height_ - mouse_y;
 	float delta_x = current_x_ - last_x_;
 	float delta_y = current_y_ - last_y_;
+    yaw += delta_x;
+    pitch += delta_y;
 	if (sqrt(delta_x * delta_x + delta_y * delta_y) < 1e-15)
 		return;
 	if (mouse_x > view_width_)
@@ -146,22 +148,26 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
 	bool drag_camera = drag_state_ && current_button_ == GLFW_MOUSE_BUTTON_RIGHT;
 	bool drag_bone = drag_state_ && current_button_ == GLFW_MOUSE_BUTTON_LEFT;
 
-		glm::vec3 axis = glm::normalize(
-				orientation_ *
-				glm::vec3(mouse_direction.y, -mouse_direction.x, 0.0f)
-				);
+		// glm::vec3 axis = glm::normalize(
+		// 		orientation_ *
+		// 		glm::vec3(mouse_direction.y, -mouse_direction.x, 0.0f)
+		// 		);
 		
-		glm::fquat new_rot = glm::quat_cast(
-							(glm::rotate(rotation_speed_, axis))
-					 );
-		camera_rot_ = new_rot * camera_rot_;
+		glm::mat4 yaw_rot = (glm::rotate(delta_x * .002f, glm::vec3(0.0f, 1.0f, 0.0f)));
+        glm::mat4 pitch_rot = (glm::rotate(delta_y * -.002f, glm::vec3(1.0f, 0.0f, 0.0f)));
+    
+		// camera_rot_ = pitch_rot * yaw_rot * camera_rot_;
 
-		orientation_ =
-			glm::mat3((glm::rotate(rotation_speed_, axis)) * glm::mat4(orientation_));
+		orientation_ = glm::mat3(glm::mat4(orientation_) * pitch_rot * yaw_rot);
 		
 		tangent_ = glm::column(orientation_, 0);
 		up_ = glm::column(orientation_, 1);
+        
 		look_ = glm::column(orientation_, 2);
+        std::cout << "tan: " << tangent_[0] << " " << tangent_[1] << " " << tangent_[2] << " " << std::endl;
+        std::cout << "up_: " << up_[0] << " " << up_[1] << " " << up_[2] << " " << std::endl;
+        std::cout << "look_: " << look_[0] << " " << look_[1] << " " << look_[2] << " " << std::endl;
+        // up_ = glm::cross(tangent_, look_);
 
 }
 
