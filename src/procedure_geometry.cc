@@ -197,8 +197,14 @@ void generate_geometry_helper(std::vector<glm::vec4>& obj_vertices,
 
 // x, y, z
 // 40, 12, 40 cubes
-void create_floor(std::vector<glm::vec4>& floor_vertices, std::vector<glm::uvec3>& floor_faces)
+void create_floor(std::vector<glm::vec4>& floor_vertices, std::vector<glm::uvec3>& floor_faces, const glm::vec3& displacements)
 {
+    double d_x = displacements[0];
+    double d_y = displacements[1];
+    double d_z = displacements[2];
+
+    floor_vertices.clear();
+    floor_faces.clear();
     // for(float y = -30.0f; y < 30.0f; y += (float)kTileLen){
     //     for(float x = kFloorXMin; x < kFloorXMax; x += (float)kTileLen){
     //         for(float z = kFloorZMin; z < kFloorZMax; z += (float)kTileLen){
@@ -216,7 +222,7 @@ void create_floor(std::vector<glm::vec4>& floor_vertices, std::vector<glm::uvec3
     for(float z = 0.0f; z < 100.0f; z += (float)kTileLen){
         for(float y = 0.0f; y < 50.0f; y += (float)kTileLen){
             for(float x = 0.0f; x < 100.0f; x += (float)kTileLen){
-                double height = pn->octaveNoise((double) x * (1/30.0) + .001, (double) y * (1/30.0) + .001, (double) z * (1/30.0) + .001, 3);
+                double height = pn->octaveNoise((double) x * (1/30.0) + d_x, (double) y * (1/30.0) + d_y, (double) z * (1/30.0) + d_z, 3);
                 // std::cout << "This is the height: " << height << std::endl;
                 if(height > 0.0f){
                     
@@ -236,6 +242,7 @@ void create_floor(std::vector<glm::vec4>& floor_vertices, std::vector<glm::uvec3
 	// floor_faces.push_back(glm::uvec3(0, 1, 2));
 	// floor_faces.push_back(glm::uvec3(2, 3, 0));
 }
+
 
 /*
  * Create Cylinder from x = -0.5 to x = 0.5

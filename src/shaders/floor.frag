@@ -13,7 +13,7 @@ void main() {
 	// float i = floor(pos.x / check_width);
 	// float j  = floor(pos.z / check_width);
     vec3 color;
-    if(pos.y < 45.0){ // dirt
+    if(pos.y < 44.0){ // dirt
         color = vec3(0.6, 0.46, 0.32); 
     } else { // floor will be white
         color = vec3(.12, .19, .08); // green floor

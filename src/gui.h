@@ -16,6 +16,11 @@ struct MatrixPointers {
 	const glm::mat4 *projection, *model, *view;
 };
 
+typedef struct {
+    glm::vec3 bMin = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 bMax = glm::vec3(0.0f, 0.0f, 0.0f);
+} Collisions;
+
 class GUI {
 public:
 	GUI(GLFWwindow*, int view_width = -1, int view_height = -1, int preview_height = -1);
@@ -55,6 +60,14 @@ public:
     glm::quat camera_rot_ = glm::quat_cast(glm::mat4(1.0f));
 	glm::quat last_rot = glm::quat_cast(glm::mat4(1.0f));
 
+    const glm::vec3 getEyePos() const {
+        return eye_;
+    }
+
+    const glm::dvec3 getDisplacement() const {
+        return displacement_;
+    }
+
 
 
 private:
@@ -76,10 +89,11 @@ private:
 	float camera_distance_ = 30.0;
 	float pan_speed_ = 0.5f;
 	float rotation_speed_ = 0.03f;
-	float zoom_speed_ = 0.5f;
+	float zoom_speed_ = 0.05f;
 	float aspect_;
     float yaw;
     float pitch;
+    float character_radius = .5f;
 
 	glm::vec3 eye_ = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 up_ = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -88,10 +102,18 @@ private:
 	glm::vec3 center_ = eye_ - camera_distance_ * look_;
 	glm::mat3 orientation_ = glm::mat3(tangent_, up_, look_);
 	glm::vec4 light_position_;
+    glm::dvec3 displacement_ = glm::vec3(0.0, 0.0, 0.0);
 
 	glm::mat4 view_matrix_ = glm::lookAt(eye_, center_, up_);
 	glm::mat4 projection_matrix_;
 	glm::mat4 model_matrix_ = glm::mat4(1.0f);
+
+    /* Init the collisions box with
+    *  eyes at center width but top of height (1.75 units)
+    *  width and depth = .5
+    */
+    Collisions collisions = {glm::vec3(eye_[0] - character_radius/2.0f, eye_[1] - 1.75f, 0.0f),  glm::vec3(eye_[0] + character_radius/2.0f, 0.0f, character_radius + character_radius)};
+
 
 	bool captureWASDUPDOWN(int key, int action);
 

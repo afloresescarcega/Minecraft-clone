@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
+#include <math.h> // fmod, 
 
 namespace {
 	// FIXME: Implement a function that performs proper
@@ -128,6 +129,8 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
     // up_ = glm::vec3(transform * glm::vec4(up_, 1.0f));
     // tangent_ = glm::vec3(transform * glm::vec4(tangent_, 1.0f));
 
+    
+
     last_x_ = current_x_;
 	last_y_ = current_y_;
 	current_x_ = mouse_x;
@@ -138,8 +141,8 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
     pitch += delta_y;
 	if (sqrt(delta_x * delta_x + delta_y * delta_y) < 1e-15)
 		return;
-	if (mouse_x > view_width_)
-		return ;
+	// if (mouse_x > view_width_)
+	// 	return ;
 	glm::vec3 mouse_direction = glm::normalize(glm::vec3(delta_x, delta_y, 0.0f));
 	glm::vec2 mouse_start = glm::vec2(last_x_, last_y_);
 	glm::vec2 mouse_end = glm::vec2(current_x_, current_y_);
@@ -157,6 +160,7 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
         glm::mat4 pitch_rot = (glm::rotate(delta_y * -.002f, glm::vec3(1.0f, 0.0f, 0.0f)));
     
 		// camera_rot_ = pitch_rot * yaw_rot * camera_rot_;
+        // float old_y = up_[1];
 
 		orientation_ = glm::mat3(glm::mat4(orientation_) * pitch_rot * yaw_rot);
 		
@@ -168,6 +172,21 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
         std::cout << "up_: " << up_[0] << " " << up_[1] << " " << up_[2] << " " << std::endl;
         std::cout << "look_: " << look_[0] << " " << look_[1] << " " << look_[2] << " " << std::endl;
         // up_ = glm::cross(tangent_, look_);
+        // up_[1] = old_y;
+        
+    // float rotation_speed = .02f;
+    // float y = (float) mouse_y;
+    // float x = (float) mouse_x;
+    // glm::vec3 tangent = glm::normalize(glm::cross(look_, up_));
+    // float old_y = tangent[1];
+    // glm::vec3 mouse_vec(glm::normalize(x * tangent - y * up_));
+    // glm::vec3 rotate_vec(glm::normalize(glm::cross(mouse_vec, look_)));
+    // glm::mat4 R = glm::rotate(rotation_speed, rotate_vec);
+    // tangent = glm::normalize(glm::vec3(R * glm::vec4(tangent, 0.0f)));
+    // tangent[1] = old_y;
+    // up_ = glm::normalize(glm::vec3(R * glm::vec4(up_, 0.0f)));
+    // up_ = up_ - glm::dot(up_, tangent) * tangent;
+    // look_ = glm::normalize(glm::cross(up_, tangent));
 
 }
 
@@ -230,41 +249,62 @@ float GUI::getCurrentPlayTime() const
 
 bool GUI::captureWASDUPDOWN(int key, int action)
 {
+    glm::vec3 directup = glm::vec3(0.0f, 1.0f, 0.0f);
 	if (key == GLFW_KEY_W) {
 		if (fps_mode_)
-			eye_ += zoom_speed_ * look_;
+			// eye_ += zoom_speed_ * look_;
+            displacement_ += zoom_speed_ * look_;
 		else
 			camera_distance_ -= zoom_speed_;
 		return true;
 	} else if (key == GLFW_KEY_S) {
 		if (fps_mode_)
-			eye_ -= zoom_speed_ * look_;
+			// eye_ -= zoom_speed_ * look_;
+            displacement_ -= zoom_speed_ * look_;
 		else
 			camera_distance_ += zoom_speed_;
 		return true;
 	} else if (key == GLFW_KEY_A) {
-		if (fps_mode_)
-			eye_ -= pan_speed_ * tangent_;
+		if (fps_mode_){
+			// eye_ -= pan_speed_ * tangent_;
+            glm::vec3 temp_eye = eye_;
+            temp_eye -= pan_speed_ * tangent_;
+            if(abs(temp_eye[0]) > 5.0f || abs(temp_eye[2]) > 5.0f){
+                displacement_ -= pan_speed_ * tangent_;
+                eye_[0] = fmod(displacement_[0] , 10.0f);
+                eye_[2] = fmod(displacement_[2] , 10.0f);
+            } else {
+                eye_ -= pan_speed_ * tangent_;
+            }
+            std::cout << "Eye pos: " << eye_[0] << ", " << eye_[1] << ", " << eye_[2] << std::endl; 
+        }
 		else
 			center_ -= pan_speed_ * tangent_;
 		return true;
 	} else if (key == GLFW_KEY_D) {
 		if (fps_mode_)
-			eye_ += pan_speed_ * tangent_;
+			// eye_ += pan_speed_ * tangent_;
+            displacement_ += pan_speed_ * tangent_;
 		else
 			center_ += pan_speed_ * tangent_;
 		return true;
 	} else if (key == GLFW_KEY_DOWN) {
 		if (fps_mode_)
-			eye_ -= pan_speed_ * up_;
+			eye_ -= pan_speed_ * directup;
 		else
-			center_ -= pan_speed_ * up_;
+			center_ -= pan_speed_ * directup;
+		return true;
+	} else if (key == GLFW_KEY_SPACE) {
+		if (fps_mode_)
+			eye_ += pan_speed_ * directup;
+		else
+			center_ += pan_speed_ * directup;
 		return true;
 	} else if (key == GLFW_KEY_UP) {
 		if (fps_mode_)
-			eye_ += pan_speed_ * up_;
+			eye_ += pan_speed_ * directup;
 		else
-			center_ += pan_speed_ * up_;
+			center_ += pan_speed_ * directup;
 		return true;
 	}
 	return false;

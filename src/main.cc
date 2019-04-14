@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
 
 	std::vector<glm::vec4> floor_vertices;
 	std::vector<glm::uvec3> floor_faces;
-	create_floor(floor_vertices, floor_faces);
+
 
 	LineMesh cylinder_mesh;
 	LineMesh axes_mesh;
@@ -179,16 +179,7 @@ int main(int argc, char* argv[])
 	// FIXME: define more ShaderUniforms for RenderPass if you want to use it.
 	//        Otherwise, do whatever you like here
 
-	// Floor render pass
-	RenderDataInput floor_pass_input;
-	floor_pass_input.assign(0, "vertex_position", floor_vertices.data(), floor_vertices.size(), 4, GL_FLOAT);
-	floor_pass_input.assignIndex(floor_faces.data(), floor_faces.size(), 3);
-	RenderPass floor_pass(-1,
-			floor_pass_input,
-			{ vertex_shader, geometry_shader, floor_fragment_shader},
-			{ floor_model, std_view, std_proj, std_light },
-			{ "fragment_color" }
-			);
+	
 
 	// PMD Model render pass
 	// FIXME: initialize the input data at Mesh::loadPmd
@@ -296,6 +287,18 @@ int main(int argc, char* argv[])
 		// draw_cylinder = (current_bone != -1 && gui.isTransparent());
 
 		// Then draw floor.
+        create_floor(floor_vertices, floor_faces, gui.getDisplacement());
+
+        // Floor render pass
+        RenderDataInput floor_pass_input;
+        floor_pass_input.assign(0, "vertex_position", floor_vertices.data(), floor_vertices.size(), 4, GL_FLOAT);
+        floor_pass_input.assignIndex(floor_faces.data(), floor_faces.size(), 3);
+        RenderPass floor_pass(-1,
+                floor_pass_input,
+                { vertex_shader, geometry_shader, floor_fragment_shader},
+                { floor_model, std_view, std_proj, std_light },
+                { "fragment_color" }
+                );
 		if (draw_floor) {
 			floor_pass.setup();
 			// Draw our triangles.
