@@ -90,7 +90,8 @@ int main(int argc, char* argv[])
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	GUI gui(window);
-
+	GLuint floor_vao;
+	glGenVertexArrays(1, (GLuint*)&floor_vao);
 
 	std::vector<glm::vec4> floor_vertices;
 	std::vector<glm::uvec3> floor_faces;
@@ -121,6 +122,7 @@ int main(int argc, char* argv[])
 	// gui.assignMesh(&mesh);
 
 	glm::vec4 light_position = glm::vec4(0.0f, 100.0f, 0.0f, 1.0f);
+    glm::vec3 world_displace_copy = glm::vec3(0.0f, 0.0f, 0.0f);
 	MatrixPointers mats; // Define MatrixPointers here for lambda to capture
 
 	/*
@@ -154,6 +156,7 @@ int main(int argc, char* argv[])
 	std::function<glm::mat4()> identity_mat = [](){ return glm::mat4(1.0f); };
 	std::function<glm::vec3()> cam_data = [&gui](){ return gui.getCamera(); };
 	std::function<glm::vec4()> lp_data = [&light_position]() { return light_position; };
+    std::function<glm::vec3()> world_dis_data = [&world_displace_copy]() {return world_displace_copy; };
 
 	auto std_model = std::make_shared<ShaderUniform<const glm::mat4*>>("model", model_data);
 	auto floor_model = make_uniform("model", identity_mat);
@@ -161,6 +164,7 @@ int main(int argc, char* argv[])
 	auto std_camera = make_uniform("camera_position", cam_data);
 	auto std_proj = make_uniform("projection", proj_data);
 	auto std_light = make_uniform("light_position", lp_data);
+    auto std_world_dis = make_uniform("world_displacement", world_dis_data);
 
 	std::function<float()> alpha_data = [&gui]() {
 		static const float transparet = 0.5; // Alpha constant goes here
@@ -245,6 +249,21 @@ int main(int argc, char* argv[])
 	// bool draw_object = true;
 	bool draw_cylinder = true;
 
+    // Then draw floor.
+    world_displace_copy = gui.getDisplacement();
+    create_floor(floor_vertices, floor_faces, gui.getDisplacement());
+
+    // Floor render pass
+    RenderDataInput floor_pass_input;
+    floor_pass_input.assign(0, "vertex_position", floor_vertices.data(), floor_vertices.size(), 4, GL_FLOAT);
+    floor_pass_input.assignIndex(floor_faces.data(), floor_faces.size(), 3);
+    RenderPass floor_pass(floor_vao,
+            floor_pass_input,
+            { vertex_shader, geometry_shader, floor_fragment_shader},
+            { floor_model, std_view, std_proj, std_light, std_world_dis },
+            { "fragment_color" }
+            );
+
 	while (!glfwWindowShouldClose(window)) {
 		// Setup some basic window stuff.
 		glfwGetFramebufferSize(window, &window_width, &window_height);
@@ -286,6 +305,7 @@ int main(int argc, char* argv[])
 		// }
 		// draw_cylinder = (current_bone != -1 && gui.isTransparent());
 
+        world_displace_copy = gui.getDisplacement();
 		// Then draw floor.
         create_floor(floor_vertices, floor_faces, gui.getDisplacement());
 
@@ -293,10 +313,10 @@ int main(int argc, char* argv[])
         RenderDataInput floor_pass_input;
         floor_pass_input.assign(0, "vertex_position", floor_vertices.data(), floor_vertices.size(), 4, GL_FLOAT);
         floor_pass_input.assignIndex(floor_faces.data(), floor_faces.size(), 3);
-        RenderPass floor_pass(-1,
+        RenderPass floor_pass(floor_vao,
                 floor_pass_input,
                 { vertex_shader, geometry_shader, floor_fragment_shader},
-                { floor_model, std_view, std_proj, std_light },
+                { floor_model, std_view, std_proj, std_light, std_world_dis },
                 { "fragment_color" }
                 );
 		if (draw_floor) {
@@ -323,6 +343,7 @@ int main(int argc, char* argv[])
 		// Poll and swap.
 		glfwPollEvents();
 		glfwSwapBuffers(window);
+        
 	}
 	glfwDestroyWindow(window);
 	glfwTerminate();

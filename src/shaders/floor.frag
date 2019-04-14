@@ -4,6 +4,7 @@ in vec4 face_normal;
 in vec4 vertex_normal;
 in vec4 light_direction;
 in vec4 world_position;
+uniform vec3 world_displacement;
 in float height;
 out vec4 fragment_color;
 
@@ -88,14 +89,19 @@ void main() {
 	// float j  = floor(pos.z / check_width);
     vec3 color;
     if(pos.y < 44.0){ // dirt
-        color = vec3(0.6, 0.46, 0.32); 
+         
+        if(pos.y < 30.0 + 10.0 * perlin(pos.xyz + world_displacement + .3)) { // cobble stone
+            color = vec3(.56, .55, .49);
+        } else {
+            color = vec3(0.6, 0.46, 0.32) +  .2 * perlin(pos.xyz + world_displacement + .3);
+        }
     } else { // floor will be white
-        color = vec3(.12, .19, .08); // green floor
+        color = vec3(.12, .19, .08) +  .1 * perlin(pos.xyz + world_displacement + .3); // green floor
     }
 	// vec3 color = mod(i + j, 2) * vec3(1.0, 1.0, 1.0);
 	float dot_nl = 1.0 * dot(normalize(light_direction), normalize(face_normal));
 	dot_nl = clamp(dot_nl, 0.0, 1.0);
-	color = clamp(dot_nl * color * perlin(pos.xyz) * 5, 0.0, 1.0);
+	color = clamp(dot_nl * color , 0.0, 1.0);
     if(true){
         fragment_color = vec4(color, 1.0);
     } else {
