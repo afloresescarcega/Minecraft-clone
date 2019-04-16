@@ -310,15 +310,7 @@ int main(int argc, char* argv[])
         create_floor(floor_vertices, floor_faces, gui.getDisplacement());
 
         // Floor render pass
-        RenderDataInput floor_pass_input;
-        floor_pass_input.assign(0, "vertex_position", floor_vertices.data(), floor_vertices.size(), 4, GL_FLOAT);
-        floor_pass_input.assignIndex(floor_faces.data(), floor_faces.size(), 3);
-        RenderPass floor_pass(floor_vao,
-                floor_pass_input,
-                { vertex_shader, geometry_shader, floor_fragment_shader},
-                { floor_model, std_view, std_proj, std_light, std_world_dis },
-                { "fragment_color" }
-                );
+        floor_pass.updateVBO(0, floor_vertices.data(), floor_vertices.size());
 		if (draw_floor) {
 			floor_pass.setup();
 			// Draw our triangles.
