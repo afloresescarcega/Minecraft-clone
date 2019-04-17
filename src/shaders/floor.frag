@@ -84,19 +84,19 @@ float perlin(in vec3 xyz){
 void main() {
     // fragment_color = vec4((1/world_position.x), 1.0 * (1/world_position.y), 1.0 * (1/world_position.z), 1.0);
 	vec4 pos = world_position;
-	// float check_width = 5.0;
+	float check_width = 5.0;
 	// float i = floor(pos.x / check_width);
 	// float j  = floor(pos.z / check_width);
     vec3 color;
     if(pos.y < 44.0){ // dirt
          
-        if(pos.y < 30.0 + 10.0 * perlin(pos.xyz + world_displacement + .3)) { // cobble stone
+        if(pos.y < 30.0 + 10.0 * perlin(pos.xyz + check_width * floor(world_displacement/check_width) + .3)) { // cobble stone
             color = vec3(.56, .55, .49);
         } else {
-            color = vec3(0.6, 0.46, 0.32) +  .2 * perlin(pos.xyz + world_displacement + .3);
+            color = vec3(0.6, 0.46, 0.32) +  .2 * perlin(pos.xyz + check_width * floor(world_displacement/check_width) + .3);
         }
     } else { // floor will be white
-        color = vec3(.12, .19, .08) +  .1 * perlin(pos.xyz + world_displacement + .3); // green floor
+        color = vec3(.12, .19, .08) +  .1 * perlin(pos.xyz + check_width * floor(world_displacement/check_width) + .3); // green floor
     }
 	// vec3 color = mod(i + j, 2) * vec3(1.0, 1.0, 1.0);
 	float dot_nl = 1.0 * dot(normalize(light_direction), normalize(face_normal));
