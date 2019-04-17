@@ -6,6 +6,7 @@
 
 #include <glm/gtx/quaternion.hpp>
 #include <GLFW/glfw3.h>
+#include "PerlinNoise.hpp"
 
 struct Mesh;
 
@@ -89,7 +90,7 @@ private:
 	float camera_distance_ = 30.0;
 	float pan_speed_ = 0.5f;
 	float rotation_speed_ = 0.03f;
-	float zoom_speed_ = 0.05f;
+	float zoom_speed_ = 0.5f;
 	float aspect_;
     float yaw;
     float pitch;

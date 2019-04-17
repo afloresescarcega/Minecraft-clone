@@ -3,9 +3,7 @@
 
 #include <iostream>
 
-#include "PerlinNoise.hpp"
 
-siv::PerlinNoise *pn = new siv::PerlinNoise(3000);
 
 
 float fade(float x){
@@ -197,7 +195,7 @@ void generate_geometry_helper(std::vector<glm::vec4>& obj_vertices,
 
 // x, y, z
 // 40, 12, 40 cubes
-void create_floor(std::vector<glm::vec4>& floor_vertices, std::vector<glm::uvec3>& floor_faces, const glm::vec3& displacements)
+void create_floor(std::vector<glm::vec4>& floor_vertices, std::vector<glm::uvec3>& floor_faces, const glm::vec3& displacements, siv::PerlinNoise *pn)
 {
     double d_x = displacements[0];
     double d_y = displacements[1];
@@ -222,7 +220,7 @@ void create_floor(std::vector<glm::vec4>& floor_vertices, std::vector<glm::uvec3
     for(float z = 0.0f; z < 100.0f; z += (float)kTileLen){
         for(float y = 0.0f; y < 50.0f; y += (float)kTileLen){
             for(float x = 0.0f; x < 100.0f; x += (float)kTileLen){
-                double height = pn->octaveNoise((double) x  + kTileLen* floor(d_x/kTileLen) + .01, (double) y + kTileLen* floor(d_y/kTileLen)+ .01, (double) z +kTileLen * floor(d_z/kTileLen)+ .01, 3);
+                double height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
                 // std::cout << "This is the height: " << height << std::endl;
                 if(height > 0.0f){
                     

@@ -93,44 +93,6 @@ void GUI::keyCallback(int key, int scancode, int action, int mods)
 
 void GUI::mousePosCallback(double mouse_x, double mouse_y)
 {
-    // if(last_x_ == 0.0f && last_y_ == 0.0f){
-    //     last_x_= mouse_x;
-    //     last_y_ = mouse_y;
-    // } else {
-    //     last_x_ = current_x_;
-    //     last_y_ = current_y_;
-    // }
-	
-	// current_x_ = mouse_x;
-	// current_y_ = window_height_ - mouse_y;
-	// float delta_x = current_x_ - last_x_;
-	// float delta_y = current_y_ - last_y_;
-
-    // yaw -= CAMERA_SPEED * delta_x ;
-    // // pitch += CAMERA_SPEED * 96 * delta_y;
-    // pitch -= CAMERA_SPEED * delta_y;
-
-
-    // // update look with the translation
-
-    // glm::quat rotPitch = glm::angleAxis(pitch, glm::vec3(1.0f, 0.0f, 0.0f));
-    // glm::quat rotYaw = glm::angleAxis(yaw, glm::vec3(0.0f, 1.0f, 0.0f));
-
-    // glm::quat orientation = rotPitch * rotYaw;
-    // orientation = glm::normalize(orientation);
-    // glm::mat4 rot = glm::mat4_cast(orientation);
-
-    // glm::mat4 trans = glm::mat4(1.0f);
-    // trans = glm::translate(trans, -1.0f * eye_);
-
-    // glm::mat4 transform = rot * trans;
-
-    // look_ = glm::vec3(transform * glm::vec4(look_, 1.0f));
-    // up_ = glm::vec3(transform * glm::vec4(up_, 1.0f));
-    // tangent_ = glm::vec3(transform * glm::vec4(tangent_, 1.0f));
-
-    
-
     last_x_ = current_x_;
 	last_y_ = current_y_;
 	current_x_ = mouse_x;
@@ -151,43 +113,26 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
 	bool drag_camera = drag_state_ && current_button_ == GLFW_MOUSE_BUTTON_RIGHT;
 	bool drag_bone = drag_state_ && current_button_ == GLFW_MOUSE_BUTTON_LEFT;
 
-		// glm::vec3 axis = glm::normalize(
-		// 		orientation_ *
-		// 		glm::vec3(mouse_direction.y, -mouse_direction.x, 0.0f)
-		// 		);
-		
-		glm::mat4 yaw_rot = (glm::rotate(delta_x * .002f, glm::vec3(0.0f, 1.0f, 0.0f)));
-        glm::mat4 pitch_rot = (glm::rotate(delta_y * -.002f, glm::vec3(1.0f, 0.0f, 0.0f)));
+    // glm::vec3 axis = glm::normalize(
+    // 		orientation_ *
+    // 		glm::vec3(mouse_direction.y, -mouse_direction.x, 0.0f)
+    // 		);
     
-		// camera_rot_ = pitch_rot * yaw_rot * camera_rot_;
-        // float old_y = up_[1];
+    glm::mat4 yaw_rot = (glm::rotate(delta_x * .002f, glm::vec3(0.0f, 1.0f, 0.0f)));
+    glm::mat4 pitch_rot = (glm::rotate(delta_y * -.002f, glm::vec3(1.0f, 0.0f, 0.0f)));
 
-		orientation_ = glm::mat3(glm::mat4(orientation_) * pitch_rot * yaw_rot);
-		
-		tangent_ = glm::column(orientation_, 0);
-		up_ = glm::column(orientation_, 1);
-        
-		look_ = glm::column(orientation_, 2);
-        std::cout << "tan: " << tangent_[0] << " " << tangent_[1] << " " << tangent_[2] << " " << std::endl;
-        std::cout << "up_: " << up_[0] << " " << up_[1] << " " << up_[2] << " " << std::endl;
-        std::cout << "look_: " << look_[0] << " " << look_[1] << " " << look_[2] << " " << std::endl;
-        // up_ = glm::cross(tangent_, look_);
-        // up_[1] = old_y;
-        
-    // float rotation_speed = .02f;
-    // float y = (float) mouse_y;
-    // float x = (float) mouse_x;
-    // glm::vec3 tangent = glm::normalize(glm::cross(look_, up_));
-    // float old_y = tangent[1];
-    // glm::vec3 mouse_vec(glm::normalize(x * tangent - y * up_));
-    // glm::vec3 rotate_vec(glm::normalize(glm::cross(mouse_vec, look_)));
-    // glm::mat4 R = glm::rotate(rotation_speed, rotate_vec);
-    // tangent = glm::normalize(glm::vec3(R * glm::vec4(tangent, 0.0f)));
-    // tangent[1] = old_y;
-    // up_ = glm::normalize(glm::vec3(R * glm::vec4(up_, 0.0f)));
-    // up_ = up_ - glm::dot(up_, tangent) * tangent;
-    // look_ = glm::normalize(glm::cross(up_, tangent));
+    // camera_rot_ = pitch_rot * yaw_rot * camera_rot_;
+    // float old_y = up_[1];
 
+    orientation_ = glm::mat3(glm::mat4(orientation_) * pitch_rot * yaw_rot);
+    
+    tangent_ = glm::column(orientation_, 0);
+    up_ = glm::column(orientation_, 1);
+    
+    look_ = glm::column(orientation_, 2);
+    std::cout << "tan: " << tangent_[0] << " " << tangent_[1] << " " << tangent_[2] << " " << std::endl;
+    std::cout << "up_: " << up_[0] << " " << up_[1] << " " << up_[2] << " " << std::endl;
+    std::cout << "look_: " << look_[0] << " " << look_[1] << " " << look_[2] << " " << std::endl;
 }
 
 void GUI::mouseButtonCallback(int button, int action, int mods)
@@ -269,13 +214,13 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 			// eye_ -= pan_speed_ * tangent_;
             glm::vec3 temp_eye = eye_;
             temp_eye -= pan_speed_ * tangent_;
-            if(abs(temp_eye[0]) > 5.0f || abs(temp_eye[2]) > 5.0f){
+            // if(abs(temp_eye[0] - 50.0f) > 5.0f || abs(temp_eye[2] - 50.0f) > 5.0f){
                 displacement_ -= pan_speed_ * tangent_;
-                eye_[0] = fmod(displacement_[0] , 10.0f);
-                eye_[2] = fmod(displacement_[2] , 10.0f);
-            } else {
-                eye_ -= pan_speed_ * tangent_;
-            }
+                // eye_[0] = fmod(displacement_[0] , 5.0f) + 50.0f;
+                // eye_[2] = fmod(displacement_[2] , 5.0f) + 50.0f;
+            // } else {
+            //     eye_ -= pan_speed_ * tangent_;
+            // }
             std::cout << "Eye pos: " << eye_[0] << ", " << eye_[1] << ", " << eye_[2] << std::endl; 
         }
 		else

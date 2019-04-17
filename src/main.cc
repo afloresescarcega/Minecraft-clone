@@ -17,6 +17,10 @@
 #include <glm/gtx/io.hpp>
 #include <debuggl.h>
 
+#include "PerlinNoise.hpp"
+
+siv::PerlinNoise *pn = new siv::PerlinNoise(3000);
+
 int window_width = 800, window_height = 600;
 const std::string window_title = "Skinning";
 
@@ -176,82 +180,15 @@ int main(int argc, char* argv[])
 	};
 	auto object_alpha = make_uniform("alpha", alpha_data);
 
-	// std::function<std::vector<glm::vec3>()> trans_data = [&mesh](){ return mesh.getCurrentQ()->transData(); };
-	// std::function<std::vector<glm::fquat>()> rot_data = [&mesh](){ return mesh.getCurrentQ()->rotData(); };
-	// auto joint_trans = make_uniform("joint_trans", trans_data);
-	// auto joint_rot = make_uniform("joint_rot", rot_data);
-	// FIXME: define more ShaderUniforms for RenderPass if you want to use it.
-	//        Otherwise, do whatever you like here
-
-	
-
-	// PMD Model render pass
-	// FIXME: initialize the input data at Mesh::loadPmd
-	// std::vector<glm::vec2>& uv_coordinates = mesh.uv_coordinates;
-	// RenderDataInput object_pass_input;
-	// object_pass_input.assign(0, "jid0", mesh.joint0.data(), mesh.joint0.size(), 1, GL_INT);
-	// object_pass_input.assign(1, "jid1", mesh.joint1.data(), mesh.joint1.size(), 1, GL_INT);
-	// object_pass_input.assign(2, "w0", mesh.weight_for_joint0.data(), mesh.weight_for_joint0.size(), 1, GL_FLOAT);
-	// object_pass_input.assign(3, "vector_from_joint0", mesh.vector_from_joint0.data(), mesh.vector_from_joint0.size(), 3, GL_FLOAT);
-	// object_pass_input.assign(4, "vector_from_joint1", mesh.vector_from_joint1.data(), mesh.vector_from_joint1.size(), 3, GL_FLOAT);
-	// object_pass_input.assign(5, "normal", mesh.vertex_normals.data(), mesh.vertex_normals.size(), 4, GL_FLOAT);
-	// object_pass_input.assign(6, "uv", uv_coordinates.data(), uv_coordinates.size(), 2, GL_FLOAT);
-	// TIPS: You won't need vertex position in your solution.
-	//       This only serves the stub shader.
-	// object_pass_input.assign(7, "vert", mesh.vertices.data(), mesh.vertices.size(), 4, GL_FLOAT);
-	// object_pass_input.assignIndex(mesh.faces.data(), mesh.faces.size(), 3);
-	// object_pass_input.useMaterials(mesh.materials);
-	// RenderPass object_pass(-1,
-	// 		object_pass_input,
-	// 		{
-	// 		  blending_shader,
-	// 		  geometry_shader,
-	// 		  fragment_shader
-	// 		},
-	// 		{ std_model, std_view, std_proj,
-	// 		  std_light,
-	// 		  std_camera, object_alpha,
-	// 		  joint_trans, joint_rot
-	// 		},
-	// 		{ "fragment_color" }
-	// 		);
-
-	// Setup the render pass for drawing bones
-	// FIXME: You won't see the bones until Skeleton::joints were properly
-	//        initialized
-	// std::vector<int> bone_vertex_id;
-	// std::vector<glm::uvec2> bone_indices;
-	// for (int i = 0; i < (int)mesh.skeleton.joints.size(); i++) {
-	// 	bone_vertex_id.emplace_back(i);
-	// }
-	// for (const auto& joint: mesh.skeleton.joints) {
-	// 	if (joint.parent_index < 0)
-	// 		continue;
-	// 	bone_indices.emplace_back(joint.joint_index, joint.parent_index);
-	// }
-	// RenderDataInput bone_pass_input;
-	// bone_pass_input.assign(0, "jid", bone_vertex_id.data(), bone_vertex_id.size(), 1, GL_UNSIGNED_INT);
-	// bone_pass_input.assignIndex(bone_indices.data(), bone_indices.size(), 2);
-	// RenderPass bone_pass(-1, bone_pass_input,
-	// 		{ bone_vertex_shader, nullptr, bone_fragment_shader},
-	// 		{ std_model, std_view, std_proj, joint_trans },
-	// 		{ "fragment_color" }
-	// 		);
-
-	// FIXME: Create the RenderPass objects for bones here.
-	//        Otherwise do whatever you like.
-
 	float aspect = 0.0f;
 	// std::cout << "center = " << mesh.getCenter() << "\n";
 
 	bool draw_floor = true;
-	// bool draw_skeleton = true;
-	// bool draw_object = true;
 	bool draw_cylinder = true;
 
     // Then draw floor.
     world_displace_copy = gui.getDisplacement();
-    create_floor(floor_vertices, floor_faces, gui.getDisplacement());
+    create_floor(floor_vertices, floor_faces, gui.getDisplacement(), pn);
 
     // Floor render pass
     RenderDataInput floor_pass_input;
@@ -280,34 +217,10 @@ int main(int argc, char* argv[])
 
 		gui.updateMatrices();
 		mats = gui.getMatrixPointers();
-#if 0
-		std::cerr << model_data() << '\n';
-		std::cerr << "call from outside: " << std_model->data_source() << "\n";
-		std_model->bind(0);
-#endif
-
-		// if (gui.isPoseDirty()) {
-		// 	mesh.updateAnimation();
-		// 	gui.clearPose();
-		// }
-
-		// int current_bone = gui.getCurrentBone();
-
-		// // Draw bones first.
-		// if (draw_skeleton && gui.isTransparent()) {
-		// 	bone_pass.setup();
-		// 	// Draw our lines.
-		// 	// FIXME: you need setup skeleton.joints properly in
-		// 	//        order to see the bones.
-		// 	CHECK_GL_ERROR(glDrawElements(GL_LINES,
-		// 	                              bone_indices.size() * 2,
-		// 	                              GL_UNSIGNED_INT, 0));
-		// }
-		// draw_cylinder = (current_bone != -1 && gui.isTransparent());
 
         world_displace_copy = gui.getDisplacement();
 		// Then draw floor.
-        create_floor(floor_vertices, floor_faces, gui.getDisplacement());
+        create_floor(floor_vertices, floor_faces, gui.getDisplacement(), pn);
 
         // Floor render pass
         floor_pass.updateVBO(0, floor_vertices.data(), floor_vertices.size());
@@ -318,19 +231,6 @@ int main(int argc, char* argv[])
 			                              floor_faces.size() * 3,
 			                              GL_UNSIGNED_INT, 0));
 		}
-
-// 		// Draw the model
-// 		if (draw_object) {
-// 			object_pass.setup();
-// 			int mid = 0;
-// 			while (object_pass.renderWithMaterial(mid))
-// 				mid++;
-// #if 0
-// 			// For debugging also
-// 			if (mid == 0) // Fallback
-// 				CHECK_GL_ERROR(glDrawElements(GL_TRIANGLES, mesh.faces.size() * 3, GL_UNSIGNED_INT, 0));
-// #endif
-// 		}
 
 		// Poll and swap.
 		glfwPollEvents();
