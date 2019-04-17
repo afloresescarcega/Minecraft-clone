@@ -222,7 +222,7 @@ void create_floor(std::vector<glm::vec4>& floor_vertices, std::vector<glm::uvec3
     for(float z = 0.0f; z < 100.0f; z += (float)kTileLen){
         for(float y = 0.0f; y < 50.0f; y += (float)kTileLen){
             for(float x = 0.0f; x < 100.0f; x += (float)kTileLen){
-                double height = pn->octaveNoise((double) x * (1/30.0) + d_x, (double) y * (1/30.0) + d_y, (double) z * (1/30.0) + d_z, 3);
+                double height = pn->octaveNoise((double) x  + kTileLen* floor(d_x/kTileLen) + .01, (double) y + kTileLen* floor(d_y/kTileLen)+ .01, (double) z +kTileLen * floor(d_z/kTileLen)+ .01, 3);
                 // std::cout << "This is the height: " << height << std::endl;
                 if(height > 0.0f){
                     
