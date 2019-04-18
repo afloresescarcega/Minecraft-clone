@@ -18,6 +18,7 @@
 #include <debuggl.h>
 
 #include "PerlinNoise.hpp"
+#include <chrono> // for gravity 
 
 siv::PerlinNoise *pn = new siv::PerlinNoise(3000);
 
@@ -100,55 +101,13 @@ int main(int argc, char* argv[])
 	std::vector<glm::vec4> floor_vertices;
 	std::vector<glm::uvec3> floor_faces;
 
+    auto t0 = std::chrono::system_clock::now().time_since_epoch();
+	auto t1 = std::chrono::system_clock::now().time_since_epoch();
 
-	LineMesh cylinder_mesh;
-	LineMesh axes_mesh;
-
-	// FIXME: we already created meshes for cylinders. Use them to render
-	//        the cylinder and axes if required by the assignment.
-	create_cylinder_mesh(cylinder_mesh);
-	create_axes_mesh(axes_mesh);
-
-	// Mesh mesh;
-	// mesh.loadPmd(argv[1]);
-	// std::cout << "Loaded object  with  " << mesh.vertices.size()
-	// 	<< " vertices and " << mesh.faces.size() << " faces.\n";
-
-	// glm::vec4 mesh_center = glm::vec4(0.0f);
-	// for (size_t i = 0; i < mesh.vertices.size(); ++i) {
-	// 	mesh_center += mesh.vertices[i];
-	// }
-	// mesh_center /= mesh.vertices.size();
-
-	/*
-	 * GUI object needs the mesh object for bone manipulation.
-	 */
-	// gui.assignMesh(&mesh);
 
 	glm::vec4 light_position = glm::vec4(0.0f, 100.0f, 0.0f, 1.0f);
     glm::vec3 world_displace_copy = glm::vec3(0.0f, 0.0f, 0.0f);
 	MatrixPointers mats; // Define MatrixPointers here for lambda to capture
-
-	/*
-	 * In the following we are going to define several lambda functions as
-	 * the data source of GLSL uniforms
-	 *
-	 * Introduction about lambda functions:
-	 *      http://en.cppreference.com/w/cpp/language/lambda
-	 *      http://www.stroustrup.com/C++11FAQ.html#lambda
-	 *
-	 * Note: lambda expressions cannot be converted to std::function directly
-	 *       Hence we need to declare the data function explicitly.
-	 *
-	 * CAVEAT: DO NOT RETURN const T&, which compiles but causes
-	 *         segfaults.
-	 *
-	 * Do not worry about the efficient issue, copy elision in C++ 17 will
-	 * minimize the performance impact.
-	 *
-	 * More details about copy elision:
-	 *      https://en.cppreference.com/w/cpp/language/copy_elision
-	 */
 
 	// FIXME: add more lambdas for data_source if you want to use RenderPass.
 	//        Otherwise, do whatever you like here
@@ -231,6 +190,44 @@ int main(int argc, char* argv[])
 			                              floor_faces.size() * 3,
 			                              GL_UNSIGNED_INT, 0));
 		}
+
+        // Apply gravity to character ----------------------------------
+        t0 = t1;
+        t1 = std::chrono::system_clock::now().time_since_epoch();
+		
+		std::chrono::duration<double, std::milli> fp_ms = t1 - t0;
+
+		float dt = (float) (fp_ms.count() / 1000);
+
+        // find the y of the nearest block underneath the player that exists
+        float max_y_under_player =  kTileLen * floor(gui.eye_.y/kTileLen);
+        // std::cout << "actual y: " << gui.eye_.y << "floored: " << max_y_under_player << std::endl; 
+        for(float i = kTileLen * floor(gui.eye_.y/kTileLen); i > 0.0f; i -= kTileLen){
+            // if block exists, capture it's y and break loop
+            float x = gui.eye_.x;
+            float y = i;
+            float z = gui.eye_.z;
+            float d_x = world_displace_copy[0];
+            float d_y = world_displace_copy[1];
+            float d_z = world_displace_copy[2];
+            double height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
+            if(height > 0.0f){ // - kTileLen and offset because that's how the 
+                // block exists,
+                max_y_under_player = y + kTileLen;
+                break;
+            }
+
+            if(i == 0.0f){
+                max_y_under_player = -999999;
+            }
+        }
+        // std::cout << "the y of the nearest block underneath the player that exists is: " << max_y_under_player << std::endl;
+
+        if(gui.eye_.y > max_y_under_player + 7.5f){
+            // std::cout << "y: " << gui.eye_.y << std::endl;
+            gui.eye_.y += -9.8 * 500 * (dt) * (dt);
+        }
+        // end of gravity code -----------------------------------------
 
 		// Poll and swap.
 		glfwPollEvents();

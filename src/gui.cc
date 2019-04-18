@@ -130,9 +130,9 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
     up_ = glm::column(orientation_, 1);
     
     look_ = glm::column(orientation_, 2);
-    std::cout << "tan: " << tangent_[0] << " " << tangent_[1] << " " << tangent_[2] << " " << std::endl;
-    std::cout << "up_: " << up_[0] << " " << up_[1] << " " << up_[2] << " " << std::endl;
-    std::cout << "look_: " << look_[0] << " " << look_[1] << " " << look_[2] << " " << std::endl;
+    // std::cout << "tan: " << tangent_[0] << " " << tangent_[1] << " " << tangent_[2] << " " << std::endl;
+    // std::cout << "up_: " << up_[0] << " " << up_[1] << " " << up_[2] << " " << std::endl;
+    // std::cout << "look_: " << look_[0] << " " << look_[1] << " " << look_[2] << " " << std::endl;
 }
 
 void GUI::mouseButtonCallback(int button, int action, int mods)
@@ -195,21 +195,21 @@ float GUI::getCurrentPlayTime() const
 bool GUI::captureWASDUPDOWN(int key, int action)
 {
     glm::vec3 directup = glm::vec3(0.0f, 1.0f, 0.0f);
-	if (key == GLFW_KEY_W) {
+	if (key == GLFW_KEY_W) { // Forward
 		if (fps_mode_)
 			// eye_ += zoom_speed_ * look_;
             displacement_ += zoom_speed_ * look_;
 		else
 			camera_distance_ -= zoom_speed_;
 		return true;
-	} else if (key == GLFW_KEY_S) {
+	} else if (key == GLFW_KEY_S) { // Backward
 		if (fps_mode_)
 			// eye_ -= zoom_speed_ * look_;
             displacement_ -= zoom_speed_ * look_;
 		else
 			camera_distance_ += zoom_speed_;
 		return true;
-	} else if (key == GLFW_KEY_A) {
+	} else if (key == GLFW_KEY_A) { // Strafe left
 		if (fps_mode_){
 			// eye_ -= pan_speed_ * tangent_;
             glm::vec3 temp_eye = eye_;
@@ -226,22 +226,26 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 		else
 			center_ -= pan_speed_ * tangent_;
 		return true;
-	} else if (key == GLFW_KEY_D) {
+	} else if (key == GLFW_KEY_D) { // Strafe right
 		if (fps_mode_)
 			// eye_ += pan_speed_ * tangent_;
             displacement_ += pan_speed_ * tangent_;
 		else
 			center_ += pan_speed_ * tangent_;
 		return true;
-	} else if (key == GLFW_KEY_DOWN) {
-		if (fps_mode_)
-			eye_ -= pan_speed_ * directup;
+	} else if (key == GLFW_KEY_DOWN) { // Jump
+		if (fps_mode_){
+			// eye_ -= pan_speed_ * directup;
+            feet_above_ground = true;
+        }
 		else
 			center_ -= pan_speed_ * directup;
 		return true;
-	} else if (key == GLFW_KEY_SPACE) {
-		if (fps_mode_)
-			eye_ += pan_speed_ * directup;
+	} else if (key == GLFW_KEY_SPACE) { // Jump
+		if (fps_mode_){
+			// eye_ += pan_speed_ * directup;
+            feet_above_ground = true;
+        }
 		else
 			center_ += pan_speed_ * directup;
 		return true;

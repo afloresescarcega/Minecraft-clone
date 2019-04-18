@@ -69,6 +69,9 @@ public:
         return displacement_;
     }
 
+    glm::vec3 eye_ = glm::vec3(50.0f, 56.0f, 50.0f);
+    bool feet_above_ground = false;
+
 
 
 private:
@@ -96,7 +99,7 @@ private:
     float pitch;
     float character_radius = .5f;
 
-	glm::vec3 eye_ = glm::vec3(50.0f, 56.0f, 50.0f);
+	
 	glm::vec3 up_ = glm::vec3(0.0f, 1.0f, 0.0f);
 	glm::vec3 look_ = glm::vec3(0.0f, 0.0f, -1.0f);
 	glm::vec3 tangent_ = glm::cross(look_, up_);
