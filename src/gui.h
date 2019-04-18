@@ -69,7 +69,7 @@ public:
         return displacement_;
     }
 
-    glm::vec3 eye_ = glm::vec3(50.0f, 56.0f, 50.0f);
+    glm::vec3 eye_ = glm::vec3(50.0f, 60.0f, 50.0f);
     bool feet_above_ground = false;
 
 

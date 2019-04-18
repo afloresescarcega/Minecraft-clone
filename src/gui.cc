@@ -123,13 +123,16 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
 
     // camera_rot_ = pitch_rot * yaw_rot * camera_rot_;
     // float old_y = up_[1];
-
+    glm::mat3 old_orientation = orientation_;
+    float old_y = tangent_[1];
     orientation_ = glm::mat3(glm::mat4(orientation_) * pitch_rot * yaw_rot);
-    
+    // glm::vec3 new_tangent = glm::cross(glm::vec3(glm::column(old_orientation, 2)), glm::vec3(0.0f, 1.0f, 0.0f));
     tangent_ = glm::column(orientation_, 0);
+    tangent_[1] = old_y;
     up_ = glm::column(orientation_, 1);
-    
-    look_ = glm::column(orientation_, 2);
+    up_ = up_ - glm::dot(up_,tangent_) * tangent_;
+
+    look_ = glm::normalize(glm::cross(up_,tangent_));
     // std::cout << "tan: " << tangent_[0] << " " << tangent_[1] << " " << tangent_[2] << " " << std::endl;
     // std::cout << "up_: " << up_[0] << " " << up_[1] << " " << up_[2] << " " << std::endl;
     // std::cout << "look_: " << look_[0] << " " << look_[1] << " " << look_[2] << " " << std::endl;
@@ -196,16 +199,41 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 {
     glm::vec3 directup = glm::vec3(0.0f, 1.0f, 0.0f);
 	if (key == GLFW_KEY_W) { // Forward
-		if (fps_mode_)
+		if (fps_mode_){
+            displacement_ += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
+            eye_ += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
+            if(eye_[0] < 45.0f){
+                eye_[0] += 5.0f;
+            } else if( eye_[0] > 55.0f){
+                eye_[0] -= 5.0f;
+            } else if(eye_[2] < 45.0f){
+                eye_[2] += 5.0f;
+            } else if( eye_[2] > 55.0f){
+                eye_[2] -= 5.0f;
+            }
+            std::cout << "Eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
+        }
 			// eye_ += zoom_speed_ * look_;
+            
+		else {
             displacement_ += zoom_speed_ * look_;
-		else
-			camera_distance_ -= zoom_speed_;
+            eye_ += zoom_speed_ * look_;
+            if(eye_[0] < 45.0f){
+                eye_[0] += 5.0f;
+            } else if( eye_[0] > 55.0f){
+                eye_[0] -= 5.0f;
+            } else if(eye_[2] < 45.0f){
+                eye_[2] += 5.0f;
+            } else if( eye_[2] > 55.0f){
+                eye_[2] -= 5.0f;
+            }
+            std::cout << "eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
+        }
 		return true;
 	} else if (key == GLFW_KEY_S) { // Backward
 		if (fps_mode_)
 			// eye_ -= zoom_speed_ * look_;
-            displacement_ -= zoom_speed_ * look_;
+            displacement_ -= zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
 		else
 			camera_distance_ += zoom_speed_;
 		return true;
@@ -215,7 +243,7 @@ bool GUI::captureWASDUPDOWN(int key, int action)
             glm::vec3 temp_eye = eye_;
             temp_eye -= pan_speed_ * tangent_;
             // if(abs(temp_eye[0] - 50.0f) > 5.0f || abs(temp_eye[2] - 50.0f) > 5.0f){
-                displacement_ -= pan_speed_ * tangent_;
+                displacement_ -= pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
                 // eye_[0] = fmod(displacement_[0] , 5.0f) + 50.0f;
                 // eye_[2] = fmod(displacement_[2] , 5.0f) + 50.0f;
             // } else {
@@ -229,7 +257,7 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 	} else if (key == GLFW_KEY_D) { // Strafe right
 		if (fps_mode_)
 			// eye_ += pan_speed_ * tangent_;
-            displacement_ += pan_speed_ * tangent_;
+            displacement_ += pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
 		else
 			center_ += pan_speed_ * tangent_;
 		return true;
