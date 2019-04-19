@@ -247,8 +247,17 @@ bool GUI::captureWASDUPDOWN(int key, int action)
         }
 	} else if (key == GLFW_KEY_S) { // Backward
 		if (fps_mode_)
-			// eye_ -= zoom_speed_ * look_;
+			eye_ -= zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
             displacement_ -= zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
+            if(eye_[0] < 45.0f){
+                eye_[0] += 5.0f;
+            } else if( eye_[0] > 55.0f){
+                eye_[0] -= 5.0f;
+            } else if(eye_[2] < 45.0f){
+                eye_[2] += 5.0f;
+            } else if( eye_[2] > 55.0f){
+                eye_[2] -= 5.0f;
+            }
 		else
 			camera_distance_ += zoom_speed_;
 		return true;
@@ -259,21 +268,41 @@ bool GUI::captureWASDUPDOWN(int key, int action)
             temp_eye -= pan_speed_ * tangent_;
             // if(abs(temp_eye[0] - 50.0f) > 5.0f || abs(temp_eye[2] - 50.0f) > 5.0f){
                 displacement_ -= pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
+                eye_ -= pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
                 // eye_[0] = fmod(displacement_[0] , 5.0f) + 50.0f;
                 // eye_[2] = fmod(displacement_[2] , 5.0f) + 50.0f;
             // } else {
             //     eye_ -= pan_speed_ * tangent_;
             // }
-            std::cout << "Eye pos: " << eye_[0] << ", " << eye_[1] << ", " << eye_[2] << std::endl; 
+            std::cout << "Eye pos: " << eye_[0] << ", " << eye_[1] << ", " << eye_[2] << std::endl;
+            if(eye_[0] < 45.0f){
+                eye_[0] += 5.0f;
+            } else if( eye_[0] > 55.0f){
+                eye_[0] -= 5.0f;
+            } else if(eye_[2] < 45.0f){
+                eye_[2] += 5.0f;
+            } else if( eye_[2] > 55.0f){
+                eye_[2] -= 5.0f;
+            }
         }
 		else
 			center_ -= pan_speed_ * tangent_;
 		return true;
 	} else if (key == GLFW_KEY_D) { // Strafe right
-		if (fps_mode_)
-			// eye_ += pan_speed_ * tangent_;
+		if (fps_mode_){
+			eye_ += pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
             displacement_ += pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
-		else
+            if(eye_[0] < 45.0f){
+                eye_[0] += 5.0f;
+            } else if( eye_[0] > 55.0f){
+                eye_[0] -= 5.0f;
+            } else if(eye_[2] < 45.0f){
+                eye_[2] += 5.0f;
+            } else if( eye_[2] > 55.0f){
+                eye_[2] -= 5.0f;
+            }
+		}
+        else
 			center_ += pan_speed_ * tangent_;
 		return true;
 	}
