@@ -100,8 +100,9 @@ void main() {
     }
 	// vec3 color = mod(i + j, 2) * vec3(1.0, 1.0, 1.0);
 	float dot_nl = 1.0 * dot(normalize(light_direction), normalize(face_normal));
-	dot_nl = clamp(dot_nl, 0.0, 1.0);
-	color = clamp(dot_nl * color , 0.0, 1.0);
+	dot_nl = clamp(dot_nl, 0.2, 1.0);
+	//color = clamp(dot_nl * color , 0.0, 1.0);
+    color = clamp(dot_nl * color , 0.0, 1.0);
     if(true){
         fragment_color = vec4(color, 1.0);
     } else {
