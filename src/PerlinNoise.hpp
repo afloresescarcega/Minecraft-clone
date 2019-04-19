@@ -1,29 +1,3 @@
-//----------------------------------------------------------------------------------------
-//
-//	siv::PerlinNoise
-//	Perlin noise library for modern C++
-//
-//	Copyright (C) 2013-2018 Ryo Suzuki <reputeless@gmail.com>
-//
-//	Permission is hereby granted, free of charge, to any person obtaining a copy
-//	of this software and associated documentation files(the "Software"), to deal
-//	in the Software without restriction, including without limitation the rights
-//	to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-//	copies of the Software, and to permit persons to whom the Software is
-//	furnished to do so, subject to the following conditions :
-//	
-//	The above copyright notice and this permission notice shall be included in
-//	all copies or substantial portions of the Software.
-//	
-//	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
-//	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//	THE SOFTWARE.
-//
-//----------------------------------------------------------------------------------------
 
 # pragma once
 # include <cstdint>
@@ -32,190 +6,98 @@
 # include <random>
 #include <iostream>
 
-namespace siv
+using namespace std;
+
+class PerlinNoise
 {
-	class PerlinNoise
-	{
-	private:
+public:
 
-		std::int32_t p[512];
+    int p[256] = {5, 83, 17, 241, 29, 117, 6, 11, 184, 80, 107, 94, 149, 253, 141, 162, 68, 167, 220, 26, 102, 79, 225, 177, 67, 20, 134, 230, 9, 43, 236, 30, 41, 208, 214, 144, 198, 62, 251, 154, 221, 174, 21, 4, 113, 13, 212, 52, 226, 88, 179, 227, 175, 24, 82, 213, 56, 132, 97, 234, 201, 166, 112, 19, 188, 53, 176, 238, 0, 122, 232, 109, 160, 116, 23, 216, 189, 247, 18, 39, 36, 27, 118, 239, 92, 165, 185, 14, 133, 209, 86, 173, 78, 101, 35, 57, 219, 158, 64, 164, 197, 76, 38, 194, 231, 211, 229, 170, 51, 163, 131, 135, 73, 61, 105, 250, 233, 199, 44, 128, 22, 130, 161, 153, 8, 228, 183, 47, 178, 71, 204, 37, 110, 171, 66, 114, 50, 46, 203, 95, 74, 143, 195, 152, 55, 215, 72, 69, 249, 181, 12, 31, 202, 186, 1, 121, 248, 138, 60, 65, 147, 49, 16, 124, 40, 156, 125, 140, 59, 224, 25, 77, 120, 245, 89, 252, 223, 98, 28, 169, 190, 126, 146, 200, 217, 242, 254, 237, 129, 87, 7, 84, 32, 235, 187, 222, 255, 111, 148, 123, 103, 142, 137, 210, 93, 168, 85, 180, 104, 54, 206, 207, 192, 119, 157, 151, 63, 246, 2, 218, 99, 136, 10, 182, 150, 91, 115, 139, 205, 70, 75, 58, 127, 172, 240, 81, 3, 196, 48, 191, 15, 34, 108, 90, 244, 159, 155, 106, 145, 193, 100, 45, 33, 42, 243, 96};
 
-		static double Fade(double t) noexcept
-		{
-			return t * t * t * (t * (t * 6 - 15) + 10);
-		}
+    static inline double interpolate(double t, double a, double b) {
+        return a + t * (b - a);
+    }
 
-		static double Lerp(double t, double a, double b) noexcept
-		{
-			return a + t * (b - a);
-		}
+    static inline double gradient(unsigned int hash, double x, double y, double z) {
+        int h = int(hash & 15);
+        double u = 0.0;
+        double v = 0.0;
+        if(h < 8){
+            u = x;
+        } else {
+            u = y;
+        }
 
-		static double Grad(std::int32_t hash, double x, double y, double z) noexcept
-		{
-			const std::int32_t h = hash & 15;
-			const double u = h < 8 ? x : y;
-			const double v = h < 4 ? y : h == 12 || h == 14 ? x : z;
-			return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
-		}
+        if(h < 4){
+            v = y;
+        } else {
+            if(h == 12 || h == 14){
+                v = x;
+            } else {
+                v = z;
+            }
+        }
+        double result = 0.0;
+        if((h & 1) == 0){
+            result += u;
+        } else {
+            result -= u;
+        }
 
-	public:
+        if((h & 2) == 0){
+            result += v;
+        } else {
+            result -= v;
+        }
+        return result;
+    }
 
-		explicit PerlinNoise(std::uint32_t seed)
-		{
-			reseed(seed);
-		}
+    PerlinNoise(unsigned int seed) {
 
-		template <class URNG>
-		explicit PerlinNoise(URNG& urng)
-		{
-			reseed(urng);
-		}
+    }
 
-		void reseed(std::uint32_t seed)
-		{
-			for (size_t i = 0; i < 256; ++i)
-			{
-				p[i] = i;
-			}
+    double noise(double x, double y, double z) const {
+        const unsigned int X = static_cast<unsigned int>(floor(x)) & 255;
+        const unsigned int Y = static_cast<unsigned int>(floor(y)) & 255;
+        const unsigned int Z = static_cast<unsigned int>(floor(z)) & 255;
 
-			std::shuffle(std::begin(p), std::begin(p) + 256, std::default_random_engine(seed));
+        x -= floor(x);
+        y -= floor(y);
+        z -= floor(z);
 
-			for (size_t i = 0; i < 256; ++i)
-			{
-				p[256 + i] = p[i];
-			}
-		}
+        const double u = x * x * x * (x * (x * 6 - 15) + 10);
+        const double v = y * y * y * (y * (y * 6 - 15) + 10);
+        const double w = z * z * z * (z * (z * 6 - 15) + 10);
 
-		template <class URNG>
-		void reseed(URNG& urng)
-		{
+        int A  = p[X & 255] + Y;
+        int AA = p[A & 255] + Z;
+        int AB = p[(A + 1) & 255] + Z;
+        int B  = p[(X + 1) & 255] + Y;
+        int BA = p[B & 255] + Z;
+        int BB = p[(B + 1) & 255] + Z;
 
-			for (size_t i = 0; i < 256; ++i)
-			{
-				p[i] = i;
-			}
+        return interpolate(w, interpolate(v, interpolate(u, gradient(p[AA & 255], x, y, z),
+            gradient(p[BA & 255], x - 1, y, z)),
+            interpolate(u, gradient(p[AB & 255], x, y - 1, z),
+            gradient(p[BB & 255], x - 1, y - 1, z))),
+            interpolate(v, interpolate(u, gradient(p[(AA + 1) & 255], x, y, z - 1),
+            gradient(p[(BA + 1) & 255], x - 1, y, z - 1)),
+            interpolate(u, gradient(p[(AB + 1) & 255], x, y - 1, z - 1),
+            gradient(p[(BB + 1) & 255], x - 1, y - 1, z - 1))));
+    }
 
-			std::shuffle(std::begin(p), std::begin(p) + 256, urng);
+    double octaveNoise(double x, double y, double z, unsigned int num_octaves) const {
+        double result = 0.0;
+        double amp = 1.0;
 
-			for (size_t i = 0; i < 256; ++i)
-			{
-				p[256 + i] = p[i];
-			}
-		}
+        for (unsigned int i = 0; i < num_octaves; ++i) {
+            result += noise(x, y, z) * amp;
+            x *= 2.0;
+            y *= 2.0;
+            z *= 2.0;
+            amp *= 0.5;
+        }
 
-		double noise(double x) const
-		{
-			return noise(x, 0.0, 0.0);
-		}
-
-		double noise(double x, double y) const
-		{
-			return noise(x, y, 0.0);
-		}
-
-		double noise(double x, double y, double z) const
-		{
-			const std::int32_t X = static_cast<std::int32_t>(std::floor(x)) & 255;
-			const std::int32_t Y = static_cast<std::int32_t>(std::floor(y)) & 255;
-			const std::int32_t Z = static_cast<std::int32_t>(std::floor(z)) & 255;
-
-			x -= std::floor(x);
-			y -= std::floor(y);
-			z -= std::floor(z);
-
-			const double u = Fade(x);
-			const double v = Fade(y);
-			const double w = Fade(z);
-
-			const std::int32_t A = p[X] + Y, AA = p[A] + Z, AB = p[A + 1] + Z;
-			const std::int32_t B = p[X + 1] + Y, BA = p[B] + Z, BB = p[B + 1] + Z;
-
-			return Lerp(w, Lerp(v, Lerp(u, Grad(p[AA], x, y, z),
-				Grad(p[BA], x - 1, y, z)),
-				Lerp(u, Grad(p[AB], x, y - 1, z),
-				Grad(p[BB], x - 1, y - 1, z))),
-				Lerp(v, Lerp(u, Grad(p[AA + 1], x, y, z - 1),
-				Grad(p[BA + 1], x - 1, y, z - 1)),
-				Lerp(u, Grad(p[AB + 1], x, y - 1, z - 1),
-				Grad(p[BB + 1], x - 1, y - 1, z - 1))));
-		}
-
-		double octaveNoise(double x, std::int32_t octaves) const
-		{
-			double result = 0.0;
-			double amp = 1.0;
-
-			for (std::int32_t i = 0; i < octaves; ++i)
-			{
-				result += noise(x) * amp;
-				x *= 2.0;
-				amp *= 0.5;
-			}
-
-			return result;
-		}
-
-		double octaveNoise(double x, double y, std::int32_t octaves) const
-		{
-			double result = 0.0;
-			double amp = 1.0;
-
-			for (std::int32_t i = 0; i < octaves; ++i)
-			{
-				result += noise(x, y) * amp;
-				x *= 2.0;
-				y *= 2.0;
-				amp *= 0.5;
-			}
-
-			return result;
-		}
-
-		double octaveNoise(double x, double y, double z, std::int32_t octaves) const
-		{
-			double result = 0.0;
-			double amp = 1.0;
-
-			for (std::int32_t i = 0; i < octaves; ++i)
-			{
-				result += noise(x, y, z) * amp;
-				x *= 2.0;
-				y *= 2.0;
-				z *= 2.0;
-				amp *= 0.5;
-			}
-
-			return result;
-		}
-
-		double noise0_1(double x) const
-		{
-			return noise(x) * 0.5 + 0.5;
-		}
-
-		double noise0_1(double x, double y) const
-		{
-			return noise(x, y) * 0.5 + 0.5;
-		}
-
-		double noise0_1(double x, double y, double z) const
-		{
-			return noise(x, y, z) * 0.5 + 0.5;
-		}
-
-		double octaveNoise0_1(double x, std::int32_t octaves) const
-		{
-			return octaveNoise(x, octaves) * 0.5 + 0.5;
-		}
-
-		double octaveNoise0_1(double x, double y, std::int32_t octaves) const
-		{
-			return octaveNoise(x, y, octaves) * 0.5 + 0.5;
-		}
-
-		double octaveNoise0_1(double x, double y, double z, std::int32_t octaves) const
-		{
-			return octaveNoise(x, y, z, octaves) * 0.5 + 0.5;
-		}
-	};
-}
+        return result;
+    }
+};
