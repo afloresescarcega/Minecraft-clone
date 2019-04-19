@@ -267,7 +267,7 @@ int main(int argc, char* argv[])
 
         // find the y of the nearest block underneath the player that exists
         float max_y_under_player =  kTileLen * floor(gui.eye_.y/kTileLen) - 7.5f;
-        std::cout << "actual y: " << gui.eye_.y << "floored: " << max_y_under_player << std::endl; 
+        // std::cout << "actual y: " << gui.eye_.y << "floored: " << max_y_under_player << std::endl; 
         for(float i = kTileLen * floor(gui.eye_.y/kTileLen) - 7.5f; i > 0.0f; i -= kTileLen){
             // if block exists, capture it's y and break loop
             float x = gui.eye_.x;

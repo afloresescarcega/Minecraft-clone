@@ -89,13 +89,12 @@ void main() {
 	// float j  = floor(pos.z / check_width);
     vec3 color;
     if(pos.y < 44.0){ // dirt
-         
         if(pos.y < 30.0 + 10.0 * perlin(pos.xyz + check_width * floor(world_displacement/check_width) + .3)) { // cobble stone
             color = vec3(.56, .55, .49);
-        } else {
+        } else { // grass
             color = vec3(0.6, 0.46, 0.32) +  .2 * perlin(pos.xyz + check_width * floor(world_displacement/check_width) + .3);
         }
-    } else { // floor will be white
+    } else { // stone
         color = vec3(.12, .19, .08) +  .1 * perlin(pos.xyz + check_width * floor(world_displacement/check_width) + .3); // green floor
     }
 	// vec3 color = mod(i + j, 2) * vec3(1.0, 1.0, 1.0);
