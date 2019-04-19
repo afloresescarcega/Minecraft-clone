@@ -268,7 +268,7 @@ int main(int argc, char* argv[])
         // find the y of the nearest block underneath the player that exists
         float max_y_under_player =  kTileLen * floor(gui.eye_.y/kTileLen) - 7.5f;
         // std::cout << "actual y: " << gui.eye_.y << "floored: " << max_y_under_player << std::endl; 
-        for(float i = kTileLen * floor(gui.eye_.y/kTileLen) - 7.5f; i > 0.0f; i -= kTileLen){
+        for(float i = kTileLen * floor(gui.eye_.y/kTileLen) - 7.5f; i > 0.0f; i -= kTileLen) {
             // if block exists, capture it's y and break loop
             float x = gui.eye_.x;
             float y = i;
@@ -277,7 +277,7 @@ int main(int argc, char* argv[])
             float d_y = world_displace_copy[1];
             float d_z = world_displace_copy[2];
             double height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
-            if(height > 0.0f){ // - kTileLen and offset because that's how the 
+            if(height > 0.0f) { // - kTileLen and offset because that's how the 
                 // block exists,
                 max_y_under_player = y + kTileLen;
                 break;

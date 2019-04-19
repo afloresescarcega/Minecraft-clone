@@ -1,7 +1,0 @@
-/u/afescar/Documents/19Spring/Graphics/memecraft/cmake/CMakeFiles/rebuild_cache.dir
-/u/afescar/Documents/19Spring/Graphics/memecraft/cmake/CMakeFiles/edit_cache.dir
-/u/afescar/Documents/19Spring/Graphics/memecraft/cmake/CMakeFiles/utgraphicsutil.dir
-/u/afescar/Documents/19Spring/Graphics/memecraft/cmake/CMakeFiles/pmdreader.dir
-/u/afescar/Documents/19Spring/Graphics/memecraft/cmake/src/CMakeFiles/rebuild_cache.dir
-/u/afescar/Documents/19Spring/Graphics/memecraft/cmake/src/CMakeFiles/minecraft.dir
-/u/afescar/Documents/19Spring/Graphics/memecraft/cmake/src/CMakeFiles/edit_cache.dir
