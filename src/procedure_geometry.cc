@@ -27,28 +27,28 @@ void generate_geometry_helper(std::vector<glm::vec4>& obj_vertices,
     bool cull = true;
     // View frustrum culling   
     for(int i = 8; i > 0; --i){
-        if(glm::angle(glm::vec3(glm::normalize(p0 - glm::vec4(gui.eye_, 0.0f))), glm::vec3(gui.look_)) > angle_offset){
+        if(glm::angle(glm::vec3(glm::normalize(p0 - glm::vec4(gui.eye_, 0.0f))), glm::vec3(gui.look_)) < angle_offset){
             cull = false;
             break;
-        } else if(glm::angle(glm::vec3(glm::normalize(p1 - glm::vec4(gui.eye_, 0.0f))), glm::vec3(gui.look_)) > angle_offset){
+        } else if(glm::angle(glm::vec3(glm::normalize(p1 - glm::vec4(gui.eye_, 0.0f))), glm::vec3(gui.look_)) < angle_offset){
             cull = false;
             break;
-        } else if(glm::angle(glm::vec3(glm::normalize(p2 - glm::vec4(gui.eye_, 0.0f))), glm::vec3(gui.look_)) > angle_offset){
+        } else if(glm::angle(glm::vec3(glm::normalize(p2 - glm::vec4(gui.eye_, 0.0f))), glm::vec3(gui.look_)) < angle_offset){
             cull = false;
             break;
-        } else if(glm::angle(glm::vec3(glm::normalize(p3 - glm::vec4(gui.eye_, 0.0f))), glm::vec3(gui.look_)) > angle_offset){
+        } else if(glm::angle(glm::vec3(glm::normalize(p3 - glm::vec4(gui.eye_, 0.0f))), glm::vec3(gui.look_)) < angle_offset){
             cull = false;
             break;
-        } else if(glm::angle(glm::vec3(glm::normalize(p4 - glm::vec4(gui.eye_, 0.0f))), glm::vec3(gui.look_)) > angle_offset){
+        } else if(glm::angle(glm::vec3(glm::normalize(p4 - glm::vec4(gui.eye_, 0.0f))), glm::vec3(gui.look_)) < angle_offset){
             cull = false;
             break;
-        } else if(glm::angle(glm::vec3(glm::normalize(p5 - glm::vec4(gui.eye_, 0.0f))), glm::vec3(gui.look_)) > angle_offset){
+        } else if(glm::angle(glm::vec3(glm::normalize(p5 - glm::vec4(gui.eye_, 0.0f))), glm::vec3(gui.look_)) < angle_offset){
             cull = false;
             break;
-        } else if(glm::angle(glm::vec3(glm::normalize(p6 - glm::vec4(gui.eye_, 0.0f))), glm::vec3(gui.look_)) > angle_offset){
+        } else if(glm::angle(glm::vec3(glm::normalize(p6 - glm::vec4(gui.eye_, 0.0f))), glm::vec3(gui.look_)) < angle_offset){
             cull = false;
             break;
-        } else if(glm::angle(glm::vec3(glm::normalize(p7 - glm::vec4(gui.eye_, 0.0f))), glm::vec3(gui.look_)) > angle_offset){
+        } else if(glm::angle(glm::vec3(glm::normalize(p7 - glm::vec4(gui.eye_, 0.0f))), glm::vec3(gui.look_)) < angle_offset){
             cull = false;
             break;
         }
@@ -63,7 +63,7 @@ void generate_geometry_helper(std::vector<glm::vec4>& obj_vertices,
     /*5*/ obj_vertices.push_back(p5);
     /*6*/ obj_vertices.push_back(p6);
     /*7*/ obj_vertices.push_back(p7);
-    if(true || cull){
+    if(cull){
     // Arbitrarily chosen front
         obj_faces.push_back(glm::uvec3(vertex_offset + 2, vertex_offset + 1, vertex_offset));
         obj_faces.push_back(glm::uvec3(vertex_offset + 3, vertex_offset + 2, vertex_offset));

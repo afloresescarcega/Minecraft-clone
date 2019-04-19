@@ -1,0 +1,20 @@
+Luis Erick Zul Rabasa
+lz6826
+
+Alex Flores Escarcega
+af28459
+
+We consumed 1 slip day
+
+We have attempted all the required features but landing. 
+In landing, we have collision detection with the floor but not with collision detection walking sideways into another block. 
+
+Extra credit attempted: 
+"🎐 Draw a sky using a procedurally-generated texture (do not simply load a cubemap from file)." 
+    - The clouds, which are part of the sky are generated procedurally.
+"🔔 Implement the Day-night Cycle."
+    - There are no keys mapped but the cycle is very fast. The sky changes color as well. A bright yellow sun is shown during the day. A white moon is shown when night.
+"🔔 🎐 Implement View Frustum Culling in order to improve FPS."
+    - Implemented in procedure_geometry.cc:28-91. The clouds VBOs are not updated to show the effect of the view frustum culling with respect to the initial look vector.
+    - The terrain is always culled with respect to the look vector.
+
