@@ -7,15 +7,11 @@
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
-#include <math.h> // fmod, 
+#include <math.h> // fmod
 
-namespace {
-	// FIXME: Implement a function that performs proper
-	//        ray-cylinder intersection detection
-	// TIPS: The implement is provided by the ray-tracer starter code.
-}
 
-GUI::GUI(GLFWwindow* window, int view_width, int view_height, int preview_height)
+
+GUI::GUI(GLFWwindow* window, PerlinNoise *pn_, int view_width, int view_height, int preview_height)
 	:window_(window), preview_height_(preview_height)
 {
 	glfwSetWindowUserPointer(window_, this);
@@ -34,6 +30,7 @@ GUI::GUI(GLFWwindow* window, int view_width, int view_height, int preview_height
 	}
 	float aspect_ = static_cast<float>(view_width_) / view_height_;
 	projection_matrix_ = glm::perspective((float)(kFov * (M_PI / 180.0f)), aspect_, kNear, kFar);
+    pn = pn_;
 }
 
 GUI::~GUI()
@@ -197,8 +194,27 @@ float GUI::getCurrentPlayTime() const
 
 bool GUI::captureWASDUPDOWN(int key, int action)
 {
+    float d_x = displacement_[0];
+    float d_y = displacement_[1];
+    float d_z = displacement_[2];
+    float x = kTileLen* floor(eye_[0]/kTileLen);
+    float eye_y  = kTileLen* floor(eye_[1]/kTileLen);
+    float feet_y = kTileLen* floor((eye_[1] - kTileLen)/kTileLen);
+    float z = kTileLen* floor(eye_[2]/kTileLen);
+    moving_forward = false;
     glm::vec3 directup = glm::vec3(0.0f, 1.0f, 0.0f);
-	if (key == GLFW_KEY_W) { // Forward
+	if (key == GLFW_KEY_W && action != GLFW_RELEASE) { // Forward
+        moving_forward = true;
+        glm::dvec3 temp_displacement_ = displacement_ +  (double) zoom_speed_ * glm::dvec3(1.0f, 0.0f, 1.0f) * glm::dvec3(look_.x, look_.y, look_.z);
+        double top_height    = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) eye_y  + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
+        double bottom_height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) feet_y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
+        if(top_height > 0.0 || bottom_height > 0.0){
+            std::cout << "eye_.x " << eye_.x << " eye_.y " << eye_.y << " eye_.z " << eye_.z << std::endl;
+            std::cout << "Intersected: y " << eye_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
+            // return true;
+        } else {
+            std::cout << "not Intersected: y " << feet_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
+        }
 		if (fps_mode_){
             displacement_ += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
             eye_ += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
@@ -211,7 +227,7 @@ bool GUI::captureWASDUPDOWN(int key, int action)
             } else if( eye_[2] > 55.0f){
                 eye_[2] -= 5.0f;
             }
-            std::cout << "Eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
+            // std::cout << "Eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
         }
 			// eye_ += zoom_speed_ * look_;
             
@@ -227,9 +243,8 @@ bool GUI::captureWASDUPDOWN(int key, int action)
             } else if( eye_[2] > 55.0f){
                 eye_[2] -= 5.0f;
             }
-            std::cout << "eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
+            // std::cout << "eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
         }
-		return true;
 	} else if (key == GLFW_KEY_S) { // Backward
 		if (fps_mode_)
 			// eye_ -= zoom_speed_ * look_;
@@ -261,18 +276,24 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 		else
 			center_ += pan_speed_ * tangent_;
 		return true;
-	} else if (key == GLFW_KEY_DOWN) { // Jump
+	}
+    
+    if (key == GLFW_KEY_DOWN) { // Jump
 		if (fps_mode_){
 			// eye_ -= pan_speed_ * directup;
             feet_above_ground = true;
+            y_velocity = 6.5f;
         }
 		else
 			center_ -= pan_speed_ * directup;
 		return true;
-	} else if (key == GLFW_KEY_SPACE) { // Jump
+	} if (key == GLFW_KEY_SPACE && !feet_above_ground) { // Jump
 		if (fps_mode_){
-			// eye_ += pan_speed_ * directup;
+			// eye_ += 15.0f * directup;
+            just_jumped = true;
             feet_above_ground = true;
+            // y_velocity = 6.5f;
+            // feet_above_ground = true;
         }
 		else
 			center_ += pan_speed_ * directup;

@@ -24,7 +24,7 @@ typedef struct {
 
 class GUI {
 public:
-	GUI(GLFWwindow*, int view_width = -1, int view_height = -1, int preview_height = -1);
+	GUI(GLFWwindow*,  PerlinNoise *pn_, int view_width = -1, int view_height = -1, int preview_height = -1);
 	~GUI();
 	void assignMesh(Mesh*);
 
@@ -69,12 +69,15 @@ public:
         return displacement_;
     }
 
-    glm::vec3 eye_ = glm::vec3(50.0f, 60.0f, 50.0f);
+    glm::vec3 eye_ = glm::vec3(50.0f, 62.5f, 50.0f);
     bool feet_above_ground = false;
+    bool just_jumped = false;
+    PerlinNoise *pn = nullptr;
+    float y_velocity = 0.0f;
+    bool moving_forward = false;
 
 
 
-private:
 	GLFWwindow* window_;
 	Mesh* mesh_;
 

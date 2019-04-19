@@ -111,91 +111,66 @@ void generate_geometry_helper(std::vector<glm::vec4>& obj_vertices,
 						glm::vec4 origin,
 						  int nesting_level,
 						  int depth,
-						  int vertex_offset)
+						  int vertex_offset, GUI& gui)
 {
 	// float cube_size = 0.5f / powf(3.0f, (float)depth);
 
 	// If our recursion level is 0, just draw a cube WITH the scale we need.
 	// if (nesting_level == 0) {
 
-		/*0*/ obj_vertices.push_back(glm::vec4(origin.x, origin.y, origin.z, 1));
-		/*1*/ obj_vertices.push_back(glm::vec4(origin.x + kTileLen, origin.y, origin.z, 1));
-		/*2*/ obj_vertices.push_back(glm::vec4(origin.x + kTileLen, origin.y + kTileLen, origin.z, 1));
-		/*3*/ obj_vertices.push_back(glm::vec4(origin.x, origin.y + kTileLen, origin.z, 1));
+    // glm::vec3
 
-		/*4*/ obj_vertices.push_back(glm::vec4(origin.x + kTileLen, origin.y, origin.z + kTileLen, 1));
-		/*5*/ obj_vertices.push_back(glm::vec4(origin.x, origin.y, origin.z + kTileLen, 1));
-		/*6*/ obj_vertices.push_back(glm::vec4(origin.x + kTileLen, origin.y + kTileLen, origin.z + kTileLen, 1));
-		/*7*/ obj_vertices.push_back(glm::vec4(origin.x, origin.y + kTileLen, origin.z + kTileLen, 1));
+    /*0*/ obj_vertices.push_back(glm::vec4(origin.x, origin.y, origin.z, 1));
+    /*1*/ obj_vertices.push_back(glm::vec4(origin.x + kTileLen, origin.y, origin.z, 1));
+    /*2*/ obj_vertices.push_back(glm::vec4(origin.x + kTileLen, origin.y + kTileLen, origin.z, 1));
+    /*3*/ obj_vertices.push_back(glm::vec4(origin.x, origin.y + kTileLen, origin.z, 1));
 
+    /*4*/ obj_vertices.push_back(glm::vec4(origin.x + kTileLen, origin.y, origin.z + kTileLen, 1));
+    /*5*/ obj_vertices.push_back(glm::vec4(origin.x, origin.y, origin.z + kTileLen, 1));
+    /*6*/ obj_vertices.push_back(glm::vec4(origin.x + kTileLen, origin.y + kTileLen, origin.z + kTileLen, 1));
+    /*7*/ obj_vertices.push_back(glm::vec4(origin.x, origin.y + kTileLen, origin.z + kTileLen, 1));
+
+    
+    // bool cull = true;
+    // // View frustrum culling   
+    // for(int i = 8; i > 0; --i){
+    //     if(glm::angle(glm::vec3(glm::normalize(glm::vec3(obj_vertices[obj_vertices.size() - i]) - glm::vec4(gui.eye_, 0.0f))), glm::vec3(gui.look_)) > 3.14/4){
+    //         cull = false;
+    //         break;
+    //     }
+    // }
+
+    // if(cull){
         // Arbitrarily chosen front
-		obj_faces.push_back(glm::uvec3(vertex_offset + 2, vertex_offset + 1, vertex_offset));
-		obj_faces.push_back(glm::uvec3(vertex_offset + 3, vertex_offset + 2, vertex_offset));
+        obj_faces.push_back(glm::uvec3(vertex_offset + 2, vertex_offset + 1, vertex_offset));
+        obj_faces.push_back(glm::uvec3(vertex_offset + 3, vertex_offset + 2, vertex_offset));
 
         // Arbitrarily chosen back
-		obj_faces.push_back(glm::uvec3(vertex_offset + 7, vertex_offset + 5, vertex_offset + 4));
-		obj_faces.push_back(glm::uvec3(vertex_offset + 6, vertex_offset + 7, vertex_offset + 4));
+        obj_faces.push_back(glm::uvec3(vertex_offset + 7, vertex_offset + 5, vertex_offset + 4));
+        obj_faces.push_back(glm::uvec3(vertex_offset + 6, vertex_offset + 7, vertex_offset + 4));
 
         // Arbitrarily chosen top
-		obj_faces.push_back(glm::uvec3(vertex_offset + 6, vertex_offset+2, vertex_offset+3));
-		obj_faces.push_back(glm::uvec3(vertex_offset + 7, vertex_offset+6, vertex_offset+3));
+        obj_faces.push_back(glm::uvec3(vertex_offset + 6, vertex_offset+2, vertex_offset+3));
+        obj_faces.push_back(glm::uvec3(vertex_offset + 7, vertex_offset+6, vertex_offset+3));
 
         // Arbitrarily chosen bottom
-		obj_faces.push_back(glm::uvec3(vertex_offset+1, vertex_offset+4, vertex_offset+5));
-		obj_faces.push_back(glm::uvec3(vertex_offset, vertex_offset+1, vertex_offset+5));
+        obj_faces.push_back(glm::uvec3(vertex_offset+1, vertex_offset+4, vertex_offset+5));
+        obj_faces.push_back(glm::uvec3(vertex_offset, vertex_offset+1, vertex_offset+5));
 
         // Arbitrarily chosen right
-		obj_faces.push_back(glm::uvec3(vertex_offset + 6, vertex_offset+4, vertex_offset+1));
-		obj_faces.push_back(glm::uvec3(vertex_offset + 2, vertex_offset+6, vertex_offset+1));
+        obj_faces.push_back(glm::uvec3(vertex_offset + 6, vertex_offset+4, vertex_offset+1));
+        obj_faces.push_back(glm::uvec3(vertex_offset + 2, vertex_offset+6, vertex_offset+1));
 
         // Arbitrarily chosen left 
-		obj_faces.push_back(glm::uvec3(vertex_offset + 3, vertex_offset, vertex_offset + 5));
-		obj_faces.push_back(glm::uvec3(vertex_offset + 7, vertex_offset + 3, vertex_offset + 5));
-	// } 
-    // else {
-	// 	// x
-	// 	for (int i = 0; i < 3; i++) {
-	// 		// y
-	// 		for (int j = 0; j < 3; j++) {
-	// 			// z
-	// 			for (int k = 0; k < 3; k++) {
-	// 				// if ((i == 1 && i == j) || (j == 1 && j == k) || (k == 1 && i == k)) {
-	// 				// 	// Skip inner cube.
-	// 				// } else {
-	// 					// std::vector<glm::vec4> obj_verticesR;
-	// 					// std::vector<glm::uvec3> obj_facesR;
-
-	// 					// float signX = i - 1;
-	// 					// float signY = j - 1;
-	// 					// float signZ = k - 1;
-	// 					// float originX = origin.x + (kTileLen - (0.5f / powf(3.0f, (float)depth+1.0f))) * signX;
-	// 					// float originY = origin.y + (kTileLen - (0.5f / powf(3.0f, (float)depth+1.0f))) * signY;
-	// 					// float originZ = origin.z + (kTileLen - (0.5f / powf(3.0f, (float)depth+1.0f))) * signZ;
-
-	// 					// // int new_nesting_level = nesting_level - 1;
-	// 					// // int new_depth = depth + 1;
-	// 					// // glm::vec4 originR(originX, originY, originZ, 1);
-	// 					// // generate_geometry_helper(obj_verticesR,
-	// 					// // 						obj_facesR, 
-	// 					// // 						originR,
-	// 					// // 						new_nesting_level,
-	// 					// // 						new_depth,
-	// 					// // 						faces_offset);
-
-	// 					// copy(obj_verticesR.begin(), obj_verticesR.end(), back_inserter(obj_vertices));
-	// 					// copy(obj_facesR.begin(), obj_facesR.end(), back_inserter(obj_faces));
-	// 					// faces_offset = faces_offset + obj_verticesR.size();
-	// 				// }
-	// 			}
-	// 		}
-	// 	}
-	// }
+        obj_faces.push_back(glm::uvec3(vertex_offset + 3, vertex_offset, vertex_offset + 5));
+        obj_faces.push_back(glm::uvec3(vertex_offset + 7, vertex_offset + 3, vertex_offset + 5));
+    // }
 }
 
 
 // x, y, z
 // 40, 12, 40 cubes
-void create_floor(std::vector<glm::vec4>& floor_vertices, std::vector<glm::uvec3>& floor_faces, const glm::vec3& displacements, siv::PerlinNoise *pn)
+void create_floor(std::vector<glm::vec4>& floor_vertices, std::vector<glm::uvec3>& floor_faces, const glm::vec3& displacements, PerlinNoise *pn, GUI& gui)
 {
     double d_x = displacements[0];
     double d_y = displacements[1];
@@ -222,10 +197,10 @@ void create_floor(std::vector<glm::vec4>& floor_vertices, std::vector<glm::uvec3
             for(float x = 0.0f; x < 100.0f; x += (float)kTileLen){
                 double height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
                 // std::cout << "This is the height: " << height << std::endl;
-                if(height > 0.0f){
+                if(height > 0.0f || y == 0.0f){
                     
                     // std::cout << "x: " << x << " y: " << y << " z: " << z << " with faces " <<  counter << " total " << floor_faces.size() << std::endl;
-                    generate_geometry_helper(floor_vertices, floor_faces, glm::vec4(x, y, z, 1), 0, 0, counter);
+                    generate_geometry_helper(floor_vertices, floor_faces, glm::vec4(x, y, z, 1), 0, 0, counter, gui);
                     counter += 8;
                 }
             }
@@ -239,6 +214,76 @@ void create_floor(std::vector<glm::vec4>& floor_vertices, std::vector<glm::uvec3
 	// floor_vertices.push_back(glm::vec4(kFloorXMin, kFloorY, kFloorZMin, 1.0f));
 	// floor_faces.push_back(glm::uvec3(0, 1, 2));
 	// floor_faces.push_back(glm::uvec3(2, 3, 0));
+}
+
+void create_clouds(std::vector<glm::vec4>& clouds_vertices, std::vector<glm::uvec3>& clouds_faces, const glm::vec3& displacements,  PerlinNoise *pn, GUI& gui){
+    double d_x = displacements[0];
+    double d_y = displacements[1];
+    double d_z = displacements[2];
+
+    clouds_vertices.clear();
+    clouds_faces.clear();
+    int counter = 0;
+    for(float z = -1000.0f; z < 1000.0f; z += (float)kTileLen){
+        for(float y = 200.0f; y < 250.0f; y += (float)kTileLen){
+            for(float x = -1000.0f; x < 1000.0f; x += (float)kTileLen){
+                double height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
+                // std::cout << "This is the height: " << height << std::endl;
+                if(height > 0.5f){
+                    
+                    // std::cout << "x: " << x << " y: " << y << " z: " << z << " with faces " <<  counter << " total " << floor_faces.size() << std::endl;
+                    generate_geometry_helper(clouds_vertices, clouds_faces, glm::vec4(x, y, z, 1), 0, 0, counter, gui);
+                    counter += 8;
+                }
+            }
+        }
+    }
+}
+
+void create_satelite(std::vector<glm::vec4>& satelite_vertices, std::vector<glm::uvec3>& satelite_faces, const glm::vec3& displacements, PerlinNoise *pn, GUI& gui){
+    satelite_vertices.clear();
+    satelite_faces.clear();
+
+    float satelite_width = 100.0f;
+
+    float init_x = 500.0f;
+    float init_y = 50.0f;
+    float init_z = 0.0f;
+    float vertex_offset = 0.0f;
+
+    /*0*/ satelite_vertices.push_back(glm::vec4(init_x, init_y, init_z, 1));
+    /*1*/ satelite_vertices.push_back(glm::vec4(init_x + satelite_width, init_y, init_z, 1));
+    /*2*/ satelite_vertices.push_back(glm::vec4(init_x + satelite_width, init_y + satelite_width, init_z, 1));
+    /*3*/ satelite_vertices.push_back(glm::vec4(init_x, init_y + satelite_width, init_z, 1));
+
+    /*4*/ satelite_vertices.push_back(glm::vec4(init_x + satelite_width, init_y, init_z + satelite_width, 1));
+    /*5*/ satelite_vertices.push_back(glm::vec4(init_x, init_y, init_z + satelite_width, 1));
+    /*6*/ satelite_vertices.push_back(glm::vec4(init_x + satelite_width, init_y + satelite_width, init_z + satelite_width, 1));
+    /*7*/ satelite_vertices.push_back(glm::vec4(init_x, init_y + satelite_width, init_z + satelite_width, 1));
+
+    // Arbitrarily chosen front
+    satelite_faces.push_back(glm::uvec3(vertex_offset + 2, vertex_offset + 1, vertex_offset));
+    satelite_faces.push_back(glm::uvec3(vertex_offset + 3, vertex_offset + 2, vertex_offset));
+
+    // Arbitrarily chosen back
+    satelite_faces.push_back(glm::uvec3(vertex_offset + 7, vertex_offset + 5, vertex_offset + 4));
+    satelite_faces.push_back(glm::uvec3(vertex_offset + 6, vertex_offset + 7, vertex_offset + 4));
+
+    // Arbitrarily chosen top
+    satelite_faces.push_back(glm::uvec3(vertex_offset + 6, vertex_offset+2, vertex_offset+3));
+    satelite_faces.push_back(glm::uvec3(vertex_offset + 7, vertex_offset+6, vertex_offset+3));
+
+    // Arbitrarily chosen bottom
+    satelite_faces.push_back(glm::uvec3(vertex_offset+1, vertex_offset+4, vertex_offset+5));
+    satelite_faces.push_back(glm::uvec3(vertex_offset, vertex_offset+1, vertex_offset+5));
+
+    // Arbitrarily chosen right
+    satelite_faces.push_back(glm::uvec3(vertex_offset + 6, vertex_offset+4, vertex_offset+1));
+    satelite_faces.push_back(glm::uvec3(vertex_offset + 2, vertex_offset+6, vertex_offset+1));
+
+    // Arbitrarily chosen left 
+    satelite_faces.push_back(glm::uvec3(vertex_offset + 3, vertex_offset, vertex_offset + 5));
+    satelite_faces.push_back(glm::uvec3(vertex_offset + 7, vertex_offset + 3, vertex_offset + 5));
 }
 
 
