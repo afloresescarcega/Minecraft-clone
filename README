@@ -17,4 +17,6 @@ Extra credit attempted:
 "🔔 🎐 Implement View Frustum Culling in order to improve FPS."
     - Implemented in procedure_geometry.cc:28-91. The clouds VBOs are not updated to show the effect of the view frustum culling with respect to the initial look vector.
     - The terrain is always culled with respect to the look vector.
+    - NOTE!!! Because of how this optimization operates, it will cause some temporary glitches in world generation
+    - On by default
 

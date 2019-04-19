@@ -205,106 +205,276 @@ bool GUI::captureWASDUPDOWN(int key, int action)
     glm::vec3 directup = glm::vec3(0.0f, 1.0f, 0.0f);
 	if (key == GLFW_KEY_W && action != GLFW_RELEASE) { // Forward
         moving_forward = true;
-        glm::dvec3 temp_displacement_ = displacement_ +  (double) zoom_speed_ * glm::dvec3(1.0f, 0.0f, 1.0f) * glm::dvec3(look_.x, look_.y, look_.z);
+        // glm::dvec3 temp_displacement_ = displacement_ +  (double) zoom_speed_ * glm::dvec3(1.0f, 0.0f, 1.0f) * glm::dvec3(look_.x, look_.y, look_.z);
+
+		glm::vec3 pred_eye = eye_;
+		glm::vec3 pred_displacement = displacement_;
+		if (fps_mode_) {
+			pred_displacement += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
+			pred_eye          += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
+		} else {
+			pred_displacement += zoom_speed_ * look_;
+			pred_eye += zoom_speed_ * look_;
+		}
+
+		d_x = pred_displacement[0];
+		d_y = pred_displacement[1];
+		d_z = pred_displacement[2];
+		x = kTileLen* floor(pred_eye[0]/kTileLen);
+		eye_y  = kTileLen* floor(pred_eye[1]/kTileLen);
+		feet_y = kTileLen* floor((pred_eye[1] - kTileLen)/kTileLen);
+		z = kTileLen* floor(pred_eye[2]/kTileLen);
+
+		//std:: cout << eye_y << std::endl;
+		//std:: cout << feet_y << std::endl;
+
+		// negative heights mean air block		
         double top_height    = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) eye_y  + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
         double bottom_height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) feet_y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
-        if(top_height > 0.0 || bottom_height > 0.0){
-            std::cout << "eye_.x " << eye_.x << " eye_.y " << eye_.y << " eye_.z " << eye_.z << std::endl;
-            std::cout << "Intersected: y " << eye_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
-            // return true;
+
+        //std:: cout << top_height << std::endl;
+        //std:: cout << bottom_height << std::endl;
+        //std:: cout << "----" << std::endl;
+
+        if (feet_y < 55.0 && (top_height > 0.0 || bottom_height > 0.0)) {
+            //std::cout << "eye_.x " << eye_.x << " eye_.y " << eye_.y << " eye_.z " << eye_.z << std::endl;
+            //std::cout << "Intersected: y " << eye_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
+            //return true;
         } else {
-            std::cout << "not Intersected: y " << feet_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
-        }
-		if (fps_mode_){
-            displacement_ += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
-            eye_ += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
-            if(eye_[0] < 45.0f){
-                eye_[0] += 5.0f;
-            } else if( eye_[0] > 55.0f){
-                eye_[0] -= 5.0f;
-            } else if(eye_[2] < 45.0f){
-                eye_[2] += 5.0f;
-            } else if( eye_[2] > 55.0f){
-                eye_[2] -= 5.0f;
-            }
-            // std::cout << "Eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
-        }
-			// eye_ += zoom_speed_ * look_;
-            
-		else {
-            displacement_ += zoom_speed_ * look_;
-            eye_ += zoom_speed_ * look_;
-            if(eye_[0] < 45.0f){
-                eye_[0] += 5.0f;
-            } else if( eye_[0] > 55.0f){
-                eye_[0] -= 5.0f;
-            } else if(eye_[2] < 45.0f){
-                eye_[2] += 5.0f;
-            } else if( eye_[2] > 55.0f){
-                eye_[2] -= 5.0f;
-            }
-            // std::cout << "eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
+            //std::cout << "not Intersected: y " << feet_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
+			//std::cout << "moving" << std::endl;
+			if (fps_mode_){
+				displacement_ += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
+				eye_          += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
+
+				// For within block movement at center of world
+				if(eye_[0] < 45.0f){
+					eye_[0] = (eye_[0] - 45.0f) + 50.0f;
+				} else if( eye_[0] > 50.0f){
+					eye_[0] = (eye_[0] - 50.0f) + 45.0f;
+				} else if(eye_[2] < 45.0f){
+					eye_[2] = (eye_[2] - 45.0f) + 50.0f;
+				} else if( eye_[2] > 50.0f){
+					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
+				}
+
+				// std::cout << "Eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
+			}
+				// eye_ += zoom_speed_ * look_;
+				
+			else {
+				displacement_ += zoom_speed_ * look_;
+				eye_ += zoom_speed_ * look_;
+
+				std:: cout << eye_.y << std::endl;
+				if(eye_[0] < 45.0f){
+					eye_[0] = (eye_[0] - 45.0f) + 50.0f;
+				} else if( eye_[0] > 50.0f){
+					eye_[0] = (eye_[0] - 50.0f) + 45.0f;
+				} else if(eye_[2] < 45.0f){
+					eye_[2] = (eye_[2] - 45.0f) + 50.0f;
+				} else if( eye_[2] > 50.0f){
+					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
+				}
+				std:: cout << eye_.y << std::endl;
+				// std::cout << "eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
+			}
         }
 	} else if (key == GLFW_KEY_S) { // Backward
-		if (fps_mode_)
-			eye_ -= zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
-            displacement_ -= zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
-            if(eye_[0] < 45.0f){
-                eye_[0] += 5.0f;
-            } else if( eye_[0] > 55.0f){
-                eye_[0] -= 5.0f;
-            } else if(eye_[2] < 45.0f){
-                eye_[2] += 5.0f;
-            } else if( eye_[2] > 55.0f){
-                eye_[2] -= 5.0f;
-            }
-		else
-			camera_distance_ += zoom_speed_;
-		return true;
-	} else if (key == GLFW_KEY_A) { // Strafe left
-		if (fps_mode_){
-			// eye_ -= pan_speed_ * tangent_;
-            glm::vec3 temp_eye = eye_;
-            temp_eye -= pan_speed_ * tangent_;
-            // if(abs(temp_eye[0] - 50.0f) > 5.0f || abs(temp_eye[2] - 50.0f) > 5.0f){
-                displacement_ -= pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
-                eye_ -= pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
-                // eye_[0] = fmod(displacement_[0] , 5.0f) + 50.0f;
-                // eye_[2] = fmod(displacement_[2] , 5.0f) + 50.0f;
-            // } else {
-            //     eye_ -= pan_speed_ * tangent_;
-            // }
-            std::cout << "Eye pos: " << eye_[0] << ", " << eye_[1] << ", " << eye_[2] << std::endl;
-            if(eye_[0] < 45.0f){
-                eye_[0] += 5.0f;
-            } else if( eye_[0] > 55.0f){
-                eye_[0] -= 5.0f;
-            } else if(eye_[2] < 45.0f){
-                eye_[2] += 5.0f;
-            } else if( eye_[2] > 55.0f){
-                eye_[2] -= 5.0f;
-            }
-        }
-		else
-			center_ -= pan_speed_ * tangent_;
-		return true;
-	} else if (key == GLFW_KEY_D) { // Strafe right
-		if (fps_mode_){
-			eye_ += pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
-            displacement_ += pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
-            if(eye_[0] < 45.0f){
-                eye_[0] += 5.0f;
-            } else if( eye_[0] > 55.0f){
-                eye_[0] -= 5.0f;
-            } else if(eye_[2] < 45.0f){
-                eye_[2] += 5.0f;
-            } else if( eye_[2] > 55.0f){
-                eye_[2] -= 5.0f;
-            }
+		moving_forward = true;
+        // glm::dvec3 temp_displacement_ = displacement_ +  (double) zoom_speed_ * glm::dvec3(1.0f, 0.0f, 1.0f) * glm::dvec3(look_.x, look_.y, look_.z);
+
+		glm::vec3 pred_eye = eye_;
+		glm::vec3 pred_displacement = displacement_;
+		if (fps_mode_) {
+			pred_displacement -= zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
+			pred_eye          -= zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
+		} else {
+			pred_displacement -= zoom_speed_ * look_;
+			pred_eye -= zoom_speed_ * look_;
 		}
-        else
-			center_ += pan_speed_ * tangent_;
-		return true;
+
+		d_x = pred_displacement[0];
+		d_y = pred_displacement[1];
+		d_z = pred_displacement[2];
+		x = kTileLen* floor(pred_eye[0]/kTileLen);
+		eye_y  = kTileLen* floor(pred_eye[1]/kTileLen);
+		feet_y = kTileLen* floor((pred_eye[1] - kTileLen)/kTileLen);
+		z = kTileLen* floor(pred_eye[2]/kTileLen);
+
+        double top_height    = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) eye_y  + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
+        double bottom_height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) feet_y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
+        if (feet_y < 55.0 && (top_height > 0.0 || bottom_height > 0.0)) {
+            //std::cout << "eye_.x " << eye_.x << " eye_.y " << eye_.y << " eye_.z " << eye_.z << std::endl;
+            //std::cout << "Intersected: y " << eye_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
+            //return true;
+        } else {
+            //std::cout << "not Intersected: y " << feet_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
+			//std::cout << "moving" << std::endl;
+			if (fps_mode_){
+				displacement_ -= zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
+				eye_          -= zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
+
+				// For within block movement at center of world
+				if(eye_[0] < 45.0f){
+					eye_[0] = (eye_[0] - 45.0f) + 50.0f;
+				} else if( eye_[0] > 50.0f){
+					eye_[0] = (eye_[0] - 50.0f) + 45.0f;
+				} else if(eye_[2] < 45.0f){
+					eye_[2] = (eye_[2] - 45.0f) + 50.0f;
+				} else if( eye_[2] > 50.0f){
+					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
+				}
+				// std::cout << "Eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
+			}
+				// eye_ += zoom_speed_ * look_;
+				
+			else {
+				displacement_ -= zoom_speed_ * look_;
+				eye_ -= zoom_speed_ * look_;
+
+				if(eye_[0] < 45.0f){
+					eye_[0] = (eye_[0] - 45.0f) + 50.0f;
+				} else if( eye_[0] > 50.0f){
+					eye_[0] = (eye_[0] - 50.0f) + 45.0f;
+				} else if(eye_[2] < 45.0f){
+					eye_[2] = (eye_[2] - 45.0f) + 50.0f;
+				} else if( eye_[2] > 50.0f){
+					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
+				}
+				// std::cout << "eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
+			}
+        }
+	} else if (key == GLFW_KEY_A) { // Strafe left
+		moving_forward = true;
+        // glm::dvec3 temp_displacement_ = displacement_ +  (double) zoom_speed_ * glm::dvec3(1.0f, 0.0f, 1.0f) * glm::dvec3(look_.x, look_.y, look_.z);
+
+		glm::vec3 pred_eye = eye_;
+		glm::vec3 pred_displacement = displacement_;
+		if (fps_mode_) {
+			pred_displacement -= pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
+			pred_eye          -= pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
+		} else {
+			pred_displacement -= pan_speed_ * tangent_;
+			pred_eye -= pan_speed_ * tangent_;
+		}
+
+		d_x = pred_displacement[0];
+		d_y = pred_displacement[1];
+		d_z = pred_displacement[2];
+		x = kTileLen* floor(pred_eye[0]/kTileLen);
+		eye_y  = kTileLen* floor(pred_eye[1]/kTileLen);
+		feet_y = kTileLen* floor((pred_eye[1] - kTileLen)/kTileLen);
+		z = kTileLen* floor(pred_eye[2]/kTileLen);
+
+		// negative heights mean air block		
+        double top_height    = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) eye_y  + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
+        double bottom_height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) feet_y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
+        if (feet_y < 55.0 && (top_height > 0.0 || bottom_height > 0.0)) {
+            //std::cout << "eye_.x " << eye_.x << " eye_.y " << eye_.y << " eye_.z " << eye_.z << std::endl;
+            //std::cout << "Intersected: y " << eye_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
+            //return true;
+        } else {
+            //std::cout << "not Intersected: y " << feet_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
+			//std::cout << "moving" << std::endl;
+			if (fps_mode_){
+				displacement_ -= pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
+				eye_          -= pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
+
+				// For within block movement at center of world
+				if(eye_[0] < 45.0f){
+					eye_[0] = (eye_[0] - 45.0f) + 50.0f;
+				} else if( eye_[0] > 50.0f){
+					eye_[0] = (eye_[0] - 50.0f) + 45.0f;
+				} else if(eye_[2] < 45.0f){
+					eye_[2] = (eye_[2] - 45.0f) + 50.0f;
+				} else if( eye_[2] > 50.0f){
+					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
+				}
+				// std::cout << "Eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
+			}
+				// eye_ += zoom_speed_ * look_;
+				
+			else {
+				displacement_ -= pan_speed_ * tangent_;
+				eye_ -= pan_speed_ * tangent_;
+				if(eye_[0] < 45.0f){
+					eye_[0] = (eye_[0] - 45.0f) + 50.0f;
+				} else if( eye_[0] > 50.0f){
+					eye_[0] = (eye_[0] - 50.0f) + 45.0f;
+				} else if(eye_[2] < 45.0f){
+					eye_[2] = (eye_[2] - 45.0f) + 50.0f;
+				} else if( eye_[2] > 50.0f){
+					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
+				}
+				// std::cout << "eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
+			}
+        }
+	} else if (key == GLFW_KEY_D) { // Strafe right
+		moving_forward = true;
+        // glm::dvec3 temp_displacement_ = displacement_ +  (double) zoom_speed_ * glm::dvec3(1.0f, 0.0f, 1.0f) * glm::dvec3(look_.x, look_.y, look_.z);
+
+		glm::vec3 pred_eye = eye_;
+		glm::vec3 pred_displacement = displacement_;
+		if (fps_mode_) {
+			pred_displacement += pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
+			pred_eye          += pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
+		} else {
+			pred_displacement += pan_speed_ * tangent_;
+			pred_eye += pan_speed_ * tangent_;
+		}
+
+		d_x = pred_displacement[0];
+		d_y = pred_displacement[1];
+		d_z = pred_displacement[2];
+		x = kTileLen* floor(pred_eye[0]/kTileLen);
+		eye_y  = kTileLen* floor(pred_eye[1]/kTileLen);
+		feet_y = kTileLen* floor((pred_eye[1] - kTileLen)/kTileLen);
+		z = kTileLen* floor(pred_eye[2]/kTileLen);
+
+		// negative heights mean air block		
+        double top_height    = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) eye_y  + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
+        double bottom_height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) feet_y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
+        if (feet_y < 55.0 && (top_height > 0.0 || bottom_height > 0.0)) {
+            //std::cout << "eye_.x " << eye_.x << " eye_.y " << eye_.y << " eye_.z " << eye_.z << std::endl;
+            //std::cout << "Intersected: y " << eye_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
+            //return true;
+        } else {
+            //std::cout << "not Intersected: y " << feet_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
+			//std::cout << "moving" << std::endl;
+			if (fps_mode_){
+				displacement_ += pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
+				eye_          += pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
+
+				// For within block movement at center of world
+				if(eye_[0] < 45.0f){
+					eye_[0] = (eye_[0] - 45.0f) + 50.0f;
+				} else if( eye_[0] > 50.0f){
+					eye_[0] = (eye_[0] - 50.0f) + 45.0f;
+				} else if(eye_[2] < 45.0f){
+					eye_[2] = (eye_[2] - 45.0f) + 50.0f;
+				} else if( eye_[2] > 50.0f){
+					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
+				}
+				// std::cout << "Eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
+			}
+				// eye_ += zoom_speed_ * look_;
+				
+			else {
+				displacement_ += pan_speed_ * tangent_;
+				eye_ += pan_speed_ * tangent_;
+				if(eye_[0] < 45.0f){
+					eye_[0] = (eye_[0] - 45.0f) + 50.0f;
+				} else if( eye_[0] > 50.0f){
+					eye_[0] = (eye_[0] - 50.0f) + 45.0f;
+				} else if(eye_[2] < 45.0f){
+					eye_[2] = (eye_[2] - 45.0f) + 50.0f;
+				} else if( eye_[2] > 50.0f){
+					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
+				}
+				// std::cout << "eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
+			}
+        }
 	}
     
     if (key == GLFW_KEY_DOWN) { // Jump

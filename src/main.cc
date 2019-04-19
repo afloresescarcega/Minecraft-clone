@@ -294,10 +294,30 @@ int main(int argc, char* argv[])
         }
         // std::cout << "the y of the nearest block underneath the player that exists is: " << max_y_under_player << std::endl;
 
-        if(gui.eye_.y > max_y_under_player + 7.5f){
-            std::cout << "y + : " << 9.8 * 500 * (dt) * (dt) << std::endl;
-            gui.eye_.y += -9.8 * 250 * (dt) * (dt);
-            gui.feet_above_ground = true;
+
+        if(gui.eye_.y > max_y_under_player + 10.0f){
+            float d_x = world_displace_copy[0];
+            float d_y = world_displace_copy[1];
+            float d_z = world_displace_copy[2];
+            float x = kTileLen* floor(gui.eye_[0]/kTileLen);
+            float eye_y  = kTileLen* floor(gui.eye_[1]/kTileLen);
+            float feet_y = kTileLen* floor((gui.eye_[1] - kTileLen)/kTileLen);
+            float z = kTileLen* floor(gui.eye_[2]/kTileLen);
+
+            double top_height    = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) eye_y  + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
+            double bottom_height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) feet_y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
+
+            if (feet_y < 55.0 && (top_height > 0.0 || bottom_height > 0.0)) {
+            } else {
+                //std::cout << -9.8 * 250 * (dt) * (dt) << std::endl;
+                gui.eye_.y += -9.8 * 250 * (dt) * (dt);
+                gui.feet_above_ground = true;
+            }
+
+            //std::cout << "*******" << std::endl;
+            //std::cout << max_y_under_player << std::endl;
+            //std::cout << gui.eye_.y << std::endl;
+            //std::cout << "*******" << std::endl;
         } else {
             gui.feet_above_ground = false;
         }
@@ -305,6 +325,10 @@ int main(int argc, char* argv[])
         if(gui.just_jumped){
             gui.just_jumped = false;
             gui.eye_.y += 10.0f;
+        }
+
+        if (gui.eye_.y < max_y_under_player + 10.0f) {
+            gui.eye_.y = max_y_under_player + 10.0f;
         }
 
         // float zoom_speed_ = .5f;
