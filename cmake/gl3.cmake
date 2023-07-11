@@ -1,15 +1,23 @@
 FIND_PACKAGE(GLEW REQUIRED)
+if (NOT GLEW_FOUND)
+    message(FATAL_ERROR "GLEW not found!")
+endif()
 INCLUDE_DIRECTORIES(${GLEW_INCLUDE_DIRS})
+set(GLEW_LIBRARIES "/usr/local/opt/glew/lib/libGLEW.dylib")
 LINK_LIBRARIES(${GLEW_LIBRARIES})
 
 IF (WIN32)
 	find_package(glfw3 CONFIG REQUIRED)
 	LIST(APPEND stdgl_libraries glfw ${GLEW_LIBRARIES})
 ELSE ()
-	FIND_PACKAGE(PkgConfig REQUIRED)
-	pkg_search_module(GLFW3 REQUIRED glfw3)
+    FIND_PACKAGE(PkgConfig REQUIRED)
+    pkg_search_module(GLFW3 REQUIRED glfw3)
+	if (NOT GLFW3_FOUND)
+        message(FATAL_ERROR "GLFW3 not found!")
+    endif()
 	INCLUDE_DIRECTORIES(${GLFW3_INCLUDE_DIRS})
-	LIST(APPEND stdgl_libraries ${GLFW3_STATIC_LIBRARIES} ${GLEW_LIBRARIES})
+	LINK_DIRECTORIES(${GLFW3_LIBRARY_DIRS}) # Add this line
+	LIST(APPEND stdgl_libraries ${GLFW3_LIBRARIES} ${GLEW_LIBRARIES})
 ENDIF ()
 
 

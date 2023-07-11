@@ -9,7 +9,9 @@
 #include <locale.h>
 
 template<typename T>
-inline T& make_null_ref() { return *reinterpret_cast<T*>(NULL); }
+inline T& make_null_ref() { 
+    throw std::runtime_error("Attempted to create a null reference"); 
+}
 
 inline exception::exception() {}
 inline exception::exception(const std::string& message) : msg_(message) {}

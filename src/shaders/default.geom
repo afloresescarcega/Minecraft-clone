@@ -101,11 +101,11 @@ float perlin(in vec3 xyz){
             
     return (my_lerp(y1_avg, y2_avg, w)+1)/2;
     // return xyz.y / 30.0;
-    unsigned int ux = uint(x);
-    unsigned int uy = uint(y);
-    unsigned int uz = uint(z);
+    uint ux = uint(x);
+    uint uy = uint(y);
+    uint uz = uint(z);
 
-    unsigned int my_h = ux;
+    uint my_h = ux;
     my_h = my_h ^ (my_h << 13);
     my_h = my_h ^ (my_h >> 17);
     my_h = my_h ^ (my_h << 5);

@@ -17,10 +17,13 @@ struct MatrixPointers {
 	const glm::mat4 *projection, *model, *view;
 };
 
-typedef struct {
-    glm::vec3 bMin = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 bMax = glm::vec3(0.0f, 0.0f, 0.0f);
-} Collisions;
+struct Collisions {
+    glm::vec3 bMin;
+    glm::vec3 bMax;
+
+    Collisions() : bMin(0.0f, 0.0f, 0.0f), bMax(0.0f, 0.0f, 0.0f) {}
+    Collisions(glm::vec3 bMin, glm::vec3 bMax) : bMin(bMin), bMax(bMax) {}
+};
 
 class GUI {
 public:

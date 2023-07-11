@@ -1,13 +1,14 @@
 # Directories
-LINK_DIRECTORIES("/usr/local/lib" "/opt/local/lib")
-INCLUDE_DIRECTORIES("/usr/local/include" "/opt/local/include")
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/lib)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 # Flags
-#set(CMAKE_CXX_FLAGS "--std=c++14 -g -fmax-errors=1")
 IF (NOT WIN32)
-set(CMAKE_CXX_FLAGS "--std=c++14 -g")
+    IF (CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "arm64")
+        set(CMAKE_CXX_FLAGS "--std=c++14 -g -arch arm64")
+    ELSE ()
+        set(CMAKE_CXX_FLAGS "--std=c++14 -g")
+    ENDIF ()
 ENDIF ()
 
 # Packages
