@@ -10,9 +10,6 @@
 
 struct Mesh;
 
-/*
- * Hint: call glUniformMatrix4fv on thest pointers
- */
 struct MatrixPointers {
 	const glm::mat4 *projection, *model, *view;
 };
