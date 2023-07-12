@@ -5,16 +5,11 @@ in vec4 vertex_normal;
 in vec4 light_direction;
 in vec4 world_position;
 uniform vec3 world_displacement;
+uniform float time;
 in float height;
 out vec4 fragment_color;
 
-
-float Fade(in float t)
-{
-    return t * t * t * (t * (t * 6 - 15) + 10);
-}
-
-float Lerp(in float t, in float a, in float b)
+float interpolate(in float t, in float a, in float b)
 {
     return a + t * (b - a);
 }
@@ -60,9 +55,9 @@ float perlin(in vec3 xyz){
     y -= floor(y);
     z -= floor(z);
 
-    float u = Fade(x);
-    float v = Fade(y);
-    float w = Fade(z);
+    float u = x * x * x * (x * (x * 6 - 15) + 10);
+    float v = y * y * y * (y * (y * 6 - 15) + 10);
+    float w = z * z * z * (z * (z * 6 - 15) + 10);
 
     int A  = p[X & 255] + Y;
     int AA = p[A & 255] + Z;
@@ -71,13 +66,13 @@ float perlin(in vec3 xyz){
     int BA = p[B & 255] + Z;
     int BB = p[(B + 1) & 255] + Z;
 
-    return Lerp(w, Lerp(v, Lerp(u, gradient(p[AA & 255], x, y, z),
+    return interpolate(w, interpolate(v, interpolate(u, gradient(p[AA & 255], x, y, z),
         gradient(p[BA & 255], x - 1, y, z)),
-        Lerp(u, gradient(p[AB & 255], x, y - 1, z),
+        interpolate(u, gradient(p[AB & 255], x, y - 1, z),
         gradient(p[BB & 255], x - 1, y - 1, z))),
-        Lerp(v, Lerp(u, gradient(p[(AA + 1) & 255], x, y, z - 1),
+        interpolate(v, interpolate(u, gradient(p[(AA + 1) & 255], x, y, z - 1),
         gradient(p[(BA + 1) & 255], x - 1, y, z - 1)),
-        Lerp(u, gradient(p[(AB + 1) & 255], x, y - 1, z - 1),
+        interpolate(u, gradient(p[(AB + 1) & 255], x, y - 1, z - 1),
         gradient(p[(BB + 1) & 255], x - 1, y - 1, z - 1))));
 }
 
@@ -89,24 +84,28 @@ void main() {
 	// float j  = floor(pos.z / check_width);
     vec3 color;
     if(pos.y < 44.0){ // dirt
+         
         if(pos.y < 30.0 + 10.0 * perlin(pos.xyz + check_width * floor(world_displacement/check_width) + .3)) { // cobble stone
             color = vec3(.56, .55, .49);
-        } else { // grass
+        } else {
             color = vec3(0.6, 0.46, 0.32) +  .2 * perlin(pos.xyz + check_width * floor(world_displacement/check_width) + .3);
         }
-    } else { // stone
+    } else { // floor will be white
         color = vec3(.12, .19, .08) +  .1 * perlin(pos.xyz + check_width * floor(world_displacement/check_width) + .3); // green floor
     }
 	// vec3 color = mod(i + j, 2) * vec3(1.0, 1.0, 1.0);
 	float dot_nl = 1.0 * dot(normalize(light_direction), normalize(face_normal));
-	dot_nl = clamp(dot_nl, 0.2, 1.0);
-	//color = clamp(dot_nl * color , 0.0, 1.0);
-    color = clamp(dot_nl * color , 0.0, 1.0);
+	dot_nl = clamp(dot_nl, 0.0, 1.0);
+	color = clamp(dot_nl * color , 0.0, 1.0);
     if(true){
         fragment_color = vec4(color, 1.0);
     } else {
         fragment_color = vec4(1.0, height, 1.0, 1.0);
     }
-	
+    if(mod(floor(time), 2.0) == 0.0){
+        fragment_color = vec4(1.0, 1.0, 0.0, 1.0);   
+    } else {
+        fragment_color = vec4(1.0, 1.0, 1.0, 1.0);
+    }
 }
 )zzz"

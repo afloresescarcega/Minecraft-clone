@@ -1,0 +1,8 @@
+FIND_PACKAGE(glm REQUIRED)
+if (NOT glm_FOUND)
+    message(FATAL_ERROR "GLM not found!")
+endif()
+INCLUDE_DIRECTORIES(/usr/local/include)
+LINK_LIBRARIES(${glm_LIBRARIES})
+
+add_definitions(-DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_SIZE_FUNC=1 -DGLM_FORCE_RADIANS=1)

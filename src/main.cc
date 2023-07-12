@@ -5,7 +5,7 @@
 #include "config.h"
 #include "gui.h"
 
-#include <algorithm>
+#include <algorithm>// clamp
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -17,13 +17,20 @@
 #include <glm/gtx/io.hpp>
 #include <debuggl.h>
 
+#include "PerlinNoise.hpp"
+#include <chrono> // for gravity 
+
+PerlinNoise *pn = new PerlinNoise(3000);
+
 int window_width = 800, window_height = 600;
 const std::string window_title = "Skinning";
 
 const char* vertex_shader =
 #include "shaders/default.vert"
 ;
-
+const char* satelite_vertex_shader =
+#include "shaders/satelite.vert"
+;
 const char* blending_shader =
 #include "shaders/blending.vert"
 ;
@@ -39,7 +46,12 @@ const char* fragment_shader =
 const char* floor_fragment_shader =
 #include "shaders/floor.frag"
 ;
-
+const char* cloud_fragment_shader = 
+#include "shaders/cloud.frag"
+;
+const char* satelite_fragment_shader = 
+#include "shaders/satelite.frag"
+;
 const char* bone_vertex_shader =
 #include "shaders/bone.vert"
 ;
@@ -87,59 +99,29 @@ int main(int argc, char* argv[])
 	// 	return -1;
 	// }
 	GLFWwindow *window = init_glefw();
-	GUI gui(window);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	GUI gui(window, pn);
+	GLuint floor_vao;
+	glGenVertexArrays(1, (GLuint*)&floor_vao);
 
 	std::vector<glm::vec4> floor_vertices;
 	std::vector<glm::uvec3> floor_faces;
-	create_floor(floor_vertices, floor_faces);
 
-	LineMesh cylinder_mesh;
-	LineMesh axes_mesh;
+    std::vector<glm::vec4> cloud_vertices;
+	std::vector<glm::uvec3> cloud_faces;
 
-	// FIXME: we already created meshes for cylinders. Use them to render
-	//        the cylinder and axes if required by the assignment.
-	create_cylinder_mesh(cylinder_mesh);
-	create_axes_mesh(axes_mesh);
+    std::vector<glm::vec4> satelite_vertices;
+	std::vector<glm::uvec3> satelite_faces;
 
-	// Mesh mesh;
-	// mesh.loadPmd(argv[1]);
-	// std::cout << "Loaded object  with  " << mesh.vertices.size()
-	// 	<< " vertices and " << mesh.faces.size() << " faces.\n";
+    auto t0 = std::chrono::system_clock::now().time_since_epoch();
+	auto t1 = std::chrono::system_clock::now().time_since_epoch();
 
-	// glm::vec4 mesh_center = glm::vec4(0.0f);
-	// for (size_t i = 0; i < mesh.vertices.size(); ++i) {
-	// 	mesh_center += mesh.vertices[i];
-	// }
-	// mesh_center /= mesh.vertices.size();
-
-	/*
-	 * GUI object needs the mesh object for bone manipulation.
-	 */
-	// gui.assignMesh(&mesh);
 
 	glm::vec4 light_position = glm::vec4(0.0f, 100.0f, 0.0f, 1.0f);
+    glm::vec3 world_displace_copy = glm::vec3(0.0f, 0.0f, 0.0f);
+    float time = 0;
 	MatrixPointers mats; // Define MatrixPointers here for lambda to capture
-
-	/*
-	 * In the following we are going to define several lambda functions as
-	 * the data source of GLSL uniforms
-	 *
-	 * Introduction about lambda functions:
-	 *      http://en.cppreference.com/w/cpp/language/lambda
-	 *      http://www.stroustrup.com/C++11FAQ.html#lambda
-	 *
-	 * Note: lambda expressions cannot be converted to std::function directly
-	 *       Hence we need to declare the data function explicitly.
-	 *
-	 * CAVEAT: DO NOT RETURN const T&, which compiles but causes
-	 *         segfaults.
-	 *
-	 * Do not worry about the efficient issue, copy elision in C++ 17 will
-	 * minimize the performance impact.
-	 *
-	 * More details about copy elision:
-	 *      https://en.cppreference.com/w/cpp/language/copy_elision
-	 */
 
 	// FIXME: add more lambdas for data_source if you want to use RenderPass.
 	//        Otherwise, do whatever you like here
@@ -151,6 +133,8 @@ int main(int argc, char* argv[])
 	std::function<glm::mat4()> identity_mat = [](){ return glm::mat4(1.0f); };
 	std::function<glm::vec3()> cam_data = [&gui](){ return gui.getCamera(); };
 	std::function<glm::vec4()> lp_data = [&light_position]() { return light_position; };
+    std::function<glm::vec3()> world_dis_data = [&world_displace_copy]() {return world_displace_copy; };
+    std::function<float()> time_data = [&time]() {return time; };
 
 	auto std_model = std::make_shared<ShaderUniform<const glm::mat4*>>("model", model_data);
 	auto floor_model = make_uniform("model", identity_mat);
@@ -158,6 +142,8 @@ int main(int argc, char* argv[])
 	auto std_camera = make_uniform("camera_position", cam_data);
 	auto std_proj = make_uniform("projection", proj_data);
 	auto std_light = make_uniform("light_position", lp_data);
+    auto std_world_dis = make_uniform("world_displacement", world_dis_data);
+    auto std_time = make_uniform("time", time_data);
 
 	std::function<float()> alpha_data = [&gui]() {
 		static const float transparet = 0.5; // Alpha constant goes here
@@ -169,93 +155,58 @@ int main(int argc, char* argv[])
 	};
 	auto object_alpha = make_uniform("alpha", alpha_data);
 
-	// std::function<std::vector<glm::vec3>()> trans_data = [&mesh](){ return mesh.getCurrentQ()->transData(); };
-	// std::function<std::vector<glm::fquat>()> rot_data = [&mesh](){ return mesh.getCurrentQ()->rotData(); };
-	// auto joint_trans = make_uniform("joint_trans", trans_data);
-	// auto joint_rot = make_uniform("joint_rot", rot_data);
-	// FIXME: define more ShaderUniforms for RenderPass if you want to use it.
-	//        Otherwise, do whatever you like here
-
-	// Floor render pass
-	RenderDataInput floor_pass_input;
-	floor_pass_input.assign(0, "vertex_position", floor_vertices.data(), floor_vertices.size(), 4, GL_FLOAT);
-	floor_pass_input.assignIndex(floor_faces.data(), floor_faces.size(), 3);
-	RenderPass floor_pass(-1,
-			floor_pass_input,
-			{ vertex_shader, geometry_shader, floor_fragment_shader},
-			{ floor_model, std_view, std_proj, std_light },
-			{ "fragment_color" }
-			);
-
-	// PMD Model render pass
-	// FIXME: initialize the input data at Mesh::loadPmd
-	// std::vector<glm::vec2>& uv_coordinates = mesh.uv_coordinates;
-	// RenderDataInput object_pass_input;
-	// object_pass_input.assign(0, "jid0", mesh.joint0.data(), mesh.joint0.size(), 1, GL_INT);
-	// object_pass_input.assign(1, "jid1", mesh.joint1.data(), mesh.joint1.size(), 1, GL_INT);
-	// object_pass_input.assign(2, "w0", mesh.weight_for_joint0.data(), mesh.weight_for_joint0.size(), 1, GL_FLOAT);
-	// object_pass_input.assign(3, "vector_from_joint0", mesh.vector_from_joint0.data(), mesh.vector_from_joint0.size(), 3, GL_FLOAT);
-	// object_pass_input.assign(4, "vector_from_joint1", mesh.vector_from_joint1.data(), mesh.vector_from_joint1.size(), 3, GL_FLOAT);
-	// object_pass_input.assign(5, "normal", mesh.vertex_normals.data(), mesh.vertex_normals.size(), 4, GL_FLOAT);
-	// object_pass_input.assign(6, "uv", uv_coordinates.data(), uv_coordinates.size(), 2, GL_FLOAT);
-	// TIPS: You won't need vertex position in your solution.
-	//       This only serves the stub shader.
-	// object_pass_input.assign(7, "vert", mesh.vertices.data(), mesh.vertices.size(), 4, GL_FLOAT);
-	// object_pass_input.assignIndex(mesh.faces.data(), mesh.faces.size(), 3);
-	// object_pass_input.useMaterials(mesh.materials);
-	// RenderPass object_pass(-1,
-	// 		object_pass_input,
-	// 		{
-	// 		  blending_shader,
-	// 		  geometry_shader,
-	// 		  fragment_shader
-	// 		},
-	// 		{ std_model, std_view, std_proj,
-	// 		  std_light,
-	// 		  std_camera, object_alpha,
-	// 		  joint_trans, joint_rot
-	// 		},
-	// 		{ "fragment_color" }
-	// 		);
-
-	// Setup the render pass for drawing bones
-	// FIXME: You won't see the bones until Skeleton::joints were properly
-	//        initialized
-	// std::vector<int> bone_vertex_id;
-	// std::vector<glm::uvec2> bone_indices;
-	// for (int i = 0; i < (int)mesh.skeleton.joints.size(); i++) {
-	// 	bone_vertex_id.emplace_back(i);
-	// }
-	// for (const auto& joint: mesh.skeleton.joints) {
-	// 	if (joint.parent_index < 0)
-	// 		continue;
-	// 	bone_indices.emplace_back(joint.joint_index, joint.parent_index);
-	// }
-	// RenderDataInput bone_pass_input;
-	// bone_pass_input.assign(0, "jid", bone_vertex_id.data(), bone_vertex_id.size(), 1, GL_UNSIGNED_INT);
-	// bone_pass_input.assignIndex(bone_indices.data(), bone_indices.size(), 2);
-	// RenderPass bone_pass(-1, bone_pass_input,
-	// 		{ bone_vertex_shader, nullptr, bone_fragment_shader},
-	// 		{ std_model, std_view, std_proj, joint_trans },
-	// 		{ "fragment_color" }
-	// 		);
-
-	// FIXME: Create the RenderPass objects for bones here.
-	//        Otherwise do whatever you like.
-
 	float aspect = 0.0f;
 	// std::cout << "center = " << mesh.getCenter() << "\n";
 
 	bool draw_floor = true;
-	// bool draw_skeleton = true;
-	// bool draw_object = true;
 	bool draw_cylinder = true;
+
+    // Then draw floor.
+    world_displace_copy = gui.getDisplacement();
+
+    // Floor render pass
+    create_floor(floor_vertices, floor_faces, gui.getDisplacement(), pn, gui);
+    RenderDataInput floor_pass_input;
+    floor_pass_input.assign(0, "vertex_position", floor_vertices.data(), floor_vertices.size(), 4, GL_FLOAT);
+    floor_pass_input.assignIndex(floor_faces.data(), floor_faces.size(), 3);
+    RenderPass floor_pass(floor_vao,
+            floor_pass_input,
+            { vertex_shader, geometry_shader, floor_fragment_shader},
+            { floor_model, std_view, std_proj, std_light, std_world_dis },
+            { "fragment_color" }
+            );
+
+    
+
+    // Clouds render pass
+    create_clouds(cloud_vertices, cloud_faces, gui.getDisplacement(), pn, gui);
+    RenderDataInput clouds_pass_input;
+    clouds_pass_input.assign(0, "vertex_position", cloud_vertices.data(), cloud_vertices.size(), 4, GL_FLOAT);
+    clouds_pass_input.assignIndex(cloud_faces.data(), cloud_faces.size(), 3);
+    RenderPass clouds_pass(-1,
+            clouds_pass_input,
+            { vertex_shader, geometry_shader, cloud_fragment_shader},
+            { floor_model, std_view, std_proj, std_light, std_world_dis },
+            { "fragment_color" }
+            );
+
+    // sun/moon render pass
+    create_satelite(satelite_vertices, satelite_faces, gui.getDisplacement(), pn, gui);
+    RenderDataInput satelite_pass_input;
+    satelite_pass_input.assign(0, "vertex_position", satelite_vertices.data(), satelite_vertices.size(), 4, GL_FLOAT);
+    satelite_pass_input.assignIndex(satelite_faces.data(), satelite_faces.size(), 3);
+    RenderPass satelite_pass(-1,
+            satelite_pass_input,
+            { satelite_vertex_shader, geometry_shader, satelite_fragment_shader},
+            { floor_model, std_view, std_proj, std_light, std_world_dis, std_time },
+            { "fragment_color" }
+            );
 
 	while (!glfwWindowShouldClose(window)) {
 		// Setup some basic window stuff.
 		glfwGetFramebufferSize(window, &window_width, &window_height);
 		glViewport(0, 0, window_width, window_height);
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		// glClearColor(.52f, .8f, .92f, 0.0f); // sky color
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_MULTISAMPLE);
 		glEnable(GL_BLEND);
@@ -267,32 +218,13 @@ int main(int argc, char* argv[])
 
 		gui.updateMatrices();
 		mats = gui.getMatrixPointers();
-#if 0
-		std::cerr << model_data() << '\n';
-		std::cerr << "call from outside: " << std_model->data_source() << "\n";
-		std_model->bind(0);
-#endif
 
-		// if (gui.isPoseDirty()) {
-		// 	mesh.updateAnimation();
-		// 	gui.clearPose();
-		// }
-
-		// int current_bone = gui.getCurrentBone();
-
-		// // Draw bones first.
-		// if (draw_skeleton && gui.isTransparent()) {
-		// 	bone_pass.setup();
-		// 	// Draw our lines.
-		// 	// FIXME: you need setup skeleton.joints properly in
-		// 	//        order to see the bones.
-		// 	CHECK_GL_ERROR(glDrawElements(GL_LINES,
-		// 	                              bone_indices.size() * 2,
-		// 	                              GL_UNSIGNED_INT, 0));
-		// }
-		// draw_cylinder = (current_bone != -1 && gui.isTransparent());
-
+        world_displace_copy = gui.getDisplacement();
 		// Then draw floor.
+        create_floor(floor_vertices, floor_faces, gui.getDisplacement(), pn, gui);
+
+        // Floor render pass
+        floor_pass.updateVBO(0, floor_vertices.data(), floor_vertices.size());
 		if (draw_floor) {
 			floor_pass.setup();
 			// Draw our triangles.
@@ -301,22 +233,115 @@ int main(int argc, char* argv[])
 			                              GL_UNSIGNED_INT, 0));
 		}
 
-// 		// Draw the model
-// 		if (draw_object) {
-// 			object_pass.setup();
-// 			int mid = 0;
-// 			while (object_pass.renderWithMaterial(mid))
-// 				mid++;
-// #if 0
-// 			// For debugging also
-// 			if (mid == 0) // Fallback
-// 				CHECK_GL_ERROR(glDrawElements(GL_TRIANGLES, mesh.faces.size() * 3, GL_UNSIGNED_INT, 0));
-// #endif
-// 		}
+        // Draw clouds
+        clouds_pass.setup();
+        // Draw our triangles.
+        CHECK_GL_ERROR(glDrawElements(GL_TRIANGLES,
+                                        cloud_faces.size() * 3,
+                                        GL_UNSIGNED_INT, 0));
+
+        // Draw clouds
+        satelite_pass.setup();
+        // Draw our triangles.
+        CHECK_GL_ERROR(glDrawElements(GL_TRIANGLES,
+                                        satelite_faces.size() * 3,
+                                        GL_UNSIGNED_INT, 0));
+        float time_diff = time - floor(time);
+        glm::vec3 sky_color = glm::vec3(1.0f);
+        if(fmod(floor(time), 2.0) == 0.0){
+            sky_color = glm::mix(glm::vec3(0.0f, 0.0f, .14f), glm::vec3(.52f, .8f, .92f), time_diff);
+        } else {
+            sky_color = glm::mix(glm::vec3(.52f, .8f, .92f), glm::vec3(0.0f, 0.0f, .14f),time_diff);
+        }
+        glClearColor(sky_color.x, sky_color.y, sky_color.z, 1.0f);
+
+
+        // Apply gravity to character ----------------------------------
+        t0 = t1;
+        t1 = std::chrono::system_clock::now().time_since_epoch();
+		
+		std::chrono::duration<double, std::milli> fp_ms = t1 - t0;
+
+		float dt = (float) (fp_ms.count() / 1000);
+        time += .01f;
+
+        // find the y of the nearest block underneath the player that exists
+        float max_y_under_player =  kTileLen * floor(gui.eye_.y/kTileLen) - 7.5f;
+        // std::cout << "actual y: " << gui.eye_.y << "floored: " << max_y_under_player << std::endl; 
+        for(float i = kTileLen * floor(gui.eye_.y/kTileLen) - 7.5f; i > 0.0f; i -= kTileLen) {
+            // if block exists, capture it's y and break loop
+            float x = gui.eye_.x;
+            float y = i;
+            float z = gui.eye_.z;
+            float d_x = world_displace_copy[0];
+            float d_y = world_displace_copy[1];
+            float d_z = world_displace_copy[2];
+            double height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
+            if(height > 0.0f) { // - kTileLen and offset because that's how the 
+                // block exists,
+                max_y_under_player = y + kTileLen;
+                break;
+            }
+
+            if(i == 0.0f){
+                max_y_under_player = -999999;
+            }
+        }
+        if(max_y_under_player < 5.0f){
+            max_y_under_player = 5.0f;  
+        } else if(max_y_under_player > 50.0f){
+            max_y_under_player = 55.0f;
+        }
+        // std::cout << "the y of the nearest block underneath the player that exists is: " << max_y_under_player << std::endl;
+
+
+        if(gui.eye_.y > max_y_under_player + 10.0f){
+            float d_x = world_displace_copy[0];
+            float d_y = world_displace_copy[1];
+            float d_z = world_displace_copy[2];
+            float x = kTileLen* floor(gui.eye_[0]/kTileLen);
+            float eye_y  = kTileLen* floor(gui.eye_[1]/kTileLen);
+            float feet_y = kTileLen* floor((gui.eye_[1] - kTileLen)/kTileLen);
+            float z = kTileLen* floor(gui.eye_[2]/kTileLen);
+
+            double top_height    = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) eye_y  + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
+            double bottom_height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) feet_y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
+
+            if (feet_y < 55.0 && (top_height > 0.0 || bottom_height > 0.0)) {
+            } else {
+                //std::cout << -9.8 * 250 * (dt) * (dt) << std::endl;
+                gui.eye_.y += -9.8 * 250 * (dt) * (dt);
+                gui.feet_above_ground = true;
+            }
+
+            //std::cout << "*******" << std::endl;
+            //std::cout << max_y_under_player << std::endl;
+            //std::cout << gui.eye_.y << std::endl;
+            //std::cout << "*******" << std::endl;
+        } else {
+            gui.feet_above_ground = false;
+        }
+
+        if(gui.just_jumped){
+            gui.just_jumped = false;
+            gui.eye_.y += 10.0f;
+        }
+
+        if (gui.eye_.y < max_y_under_player + 10.0f) {
+            gui.eye_.y = max_y_under_player + 10.0f;
+        }
+
+        // float zoom_speed_ = .5f;
+        // if(gui.moving_forward){
+        //     gui.displacement_ += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * gui.look_;
+        //     gui.eye_ += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * gui.look_;
+        // }
+        // end of gravity code -----------------------------------------
 
 		// Poll and swap.
 		glfwPollEvents();
 		glfwSwapBuffers(window);
+        
 	}
 	glfwDestroyWindow(window);
 	glfwTerminate();
