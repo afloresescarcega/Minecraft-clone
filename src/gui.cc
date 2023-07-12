@@ -37,12 +37,6 @@ GUI::~GUI()
 {
 }
 
-// void GUI::assignMesh(Mesh* mesh)
-// {
-// 	mesh_ = mesh;
-// 	center_ = mesh_->getCenter();
-// }
-
 void GUI::keyCallback(int key, int scancode, int action, int mods)
 {
 #if 0
@@ -56,36 +50,17 @@ void GUI::keyCallback(int key, int scancode, int action, int mods)
 	if (key == GLFW_KEY_J && action == GLFW_RELEASE) {
 		//FIXME save out a screenshot using SaveJPEG
 	}
-	// if (key == GLFW_KEY_S && (mods & GLFW_MOD_CONTROL)) {
-	// 	if (action == GLFW_RELEASE)
-	// 		mesh_->saveAnimationTo("animation.json");
-	// 	return ;
-	// }
 
 	if (mods == 0 && captureWASDUPDOWN(key, action))
 		return ;
 	if (key == GLFW_KEY_LEFT || key == GLFW_KEY_RIGHT) {
-		// float roll_speed;
-		// if (key == GLFW_KEY_RIGHT)
-		// 	roll_speed = -roll_speed_;
-		// else
-		// 	roll_speed = roll_speed_;
-		// FIXME: actually roll the bone here
 	} else if (key == GLFW_KEY_C && action != GLFW_RELEASE) {
 		fps_mode_ = !fps_mode_;
 	} else if (key == GLFW_KEY_LEFT_BRACKET && action == GLFW_RELEASE) {
-		// current_bone_--;
-		// current_bone_ += mesh_->getNumberOfBones();
-		// current_bone_ %= mesh_->getNumberOfBones();
 	} else if (key == GLFW_KEY_RIGHT_BRACKET && action == GLFW_RELEASE) {
-		// current_bone_++;
-		// current_bone_ += mesh_->getNumberOfBones();
-		// current_bone_ %= mesh_->getNumberOfBones();
 	} else if (key == GLFW_KEY_T && action != GLFW_RELEASE) {
-		// transparent_ = !transparent_;
 	}
 
-	// FIXME: implement other controls here.
 }
 
 void GUI::mousePosCallback(double mouse_x, double mouse_y)
@@ -96,60 +71,30 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
 	current_y_ = window_height_ - mouse_y;
 	float delta_x = current_x_ - last_x_;
 	float delta_y = current_y_ - last_y_;
-    yaw += delta_x;
-    pitch += delta_y;
+    yaw -= delta_x;
+    pitch = std::max(-89.0f, std::min(89.0f, pitch + delta_y));
 	if (sqrt(delta_x * delta_x + delta_y * delta_y) < 1e-15)
 		return;
-	// if (mouse_x > view_width_)
-	// 	return ;
 	glm::vec3 mouse_direction = glm::normalize(glm::vec3(delta_x, delta_y, 0.0f));
 	glm::vec2 mouse_start = glm::vec2(last_x_, last_y_);
 	glm::vec2 mouse_end = glm::vec2(current_x_, current_y_);
 	glm::uvec4 viewport = glm::uvec4(0, 0, view_width_, view_height_);
 
-	bool drag_camera = drag_state_ && current_button_ == GLFW_MOUSE_BUTTON_RIGHT;
-	bool drag_bone = drag_state_ && current_button_ == GLFW_MOUSE_BUTTON_LEFT;
-
-    // glm::vec3 axis = glm::normalize(
-    // 		orientation_ *
-    // 		glm::vec3(mouse_direction.y, -mouse_direction.x, 0.0f)
-    // 		);
     
-    glm::mat4 yaw_rot = (glm::rotate(delta_x * .002f, glm::vec3(0.0f, 1.0f, 0.0f)));
-    glm::mat4 pitch_rot = (glm::rotate(delta_y * -.002f, glm::vec3(1.0f, 0.0f, 0.0f)));
-
-    // camera_rot_ = pitch_rot * yaw_rot * camera_rot_;
-    // float old_y = up_[1];
-    glm::mat3 old_orientation = orientation_;
-    float old_y = tangent_[1];
-    orientation_ = glm::mat3(glm::mat4(orientation_) * pitch_rot * yaw_rot);
-    // glm::vec3 new_tangent = glm::cross(glm::vec3(glm::column(old_orientation, 2)), glm::vec3(0.0f, 1.0f, 0.0f));
-    tangent_ = glm::column(orientation_, 0);
-    tangent_[1] = old_y;
-    up_ = glm::column(orientation_, 1);
-    up_ = up_ - glm::dot(up_,tangent_) * tangent_;
-
-    look_ = glm::normalize(glm::cross(up_,tangent_));
-    // std::cout << "tan: " << tangent_[0] << " " << tangent_[1] << " " << tangent_[2] << " " << std::endl;
-    // std::cout << "up_: " << up_[0] << " " << up_[1] << " " << up_[2] << " " << std::endl;
-    // std::cout << "look_: " << look_[0] << " " << look_[1] << " " << look_[2] << " " << std::endl;
+    pitch = std::max(-89.0f, std::min(89.0f, pitch - delta_y * 0.002f));
+    yaw += delta_x * 0.002f;
+    glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f)) * glm::rotate(glm::mat4(1.0f), glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
+    look_ = glm::vec3(rotation * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f));
+    up_ = glm::vec3(0.0f, 1.0f, 0.0f);
+    tangent_ = glm::normalize(glm::cross(up_, look_));
 }
 
 void GUI::mouseButtonCallback(int button, int action, int mods)
 {
-	// if (current_x_ <= view_width_) {
-	// 	drag_state_ = (action == GLFW_PRESS);
-	// 	current_button_ = button;
-	// 	return ;
-	// }
-	// FIXME: Key Frame Selection
 }
 
 void GUI::mouseScrollCallback(double dx, double dy)
 {
-	// if (current_x_ < view_width_)
-	// 	return;
-	// FIXME: Mouse Scrolling
 }
 
 void GUI::updateMatrices()
@@ -178,14 +123,6 @@ MatrixPointers GUI::getMatrixPointers() const
 	return ret;
 }
 
-// bool GUI::setCurrentBone(int i)
-// {
-// 	if (i < 0 || i >= mesh_->getNumberOfBones())
-// 		return false;
-// 	current_bone_ = i;
-// 	return true;
-// }
-
 float GUI::getCurrentPlayTime() const
 {
 	return 0.0f;
@@ -205,7 +142,6 @@ bool GUI::captureWASDUPDOWN(int key, int action)
     glm::vec3 directup = glm::vec3(0.0f, 1.0f, 0.0f);
 	if (key == GLFW_KEY_W && action != GLFW_RELEASE) { // Forward
         moving_forward = true;
-        // glm::dvec3 temp_displacement_ = displacement_ +  (double) zoom_speed_ * glm::dvec3(1.0f, 0.0f, 1.0f) * glm::dvec3(look_.x, look_.y, look_.z);
 
 		glm::vec3 pred_eye = eye_;
 		glm::vec3 pred_displacement = displacement_;
@@ -225,24 +161,13 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 		feet_y = kTileLen* floor((pred_eye[1] - kTileLen)/kTileLen);
 		z = kTileLen* floor(pred_eye[2]/kTileLen);
 
-		//std:: cout << eye_y << std::endl;
-		//std:: cout << feet_y << std::endl;
 
 		// negative heights mean air block		
         double top_height    = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) eye_y  + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
         double bottom_height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) feet_y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
 
-        //std:: cout << top_height << std::endl;
-        //std:: cout << bottom_height << std::endl;
-        //std:: cout << "----" << std::endl;
-
         if (feet_y < 55.0 && (top_height > 0.0 || bottom_height > 0.0)) {
-            //std::cout << "eye_.x " << eye_.x << " eye_.y " << eye_.y << " eye_.z " << eye_.z << std::endl;
-            //std::cout << "Intersected: y " << eye_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
-            //return true;
         } else {
-            //std::cout << "not Intersected: y " << feet_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
-			//std::cout << "moving" << std::endl;
 			if (fps_mode_){
 				displacement_ += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
 				eye_          += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
@@ -258,10 +183,8 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
 				}
 
-				// std::cout << "Eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
 			}
-				// eye_ += zoom_speed_ * look_;
-				
+
 			else {
 				displacement_ += zoom_speed_ * look_;
 				eye_ += zoom_speed_ * look_;
@@ -277,12 +200,10 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
 				}
 				std:: cout << eye_.y << std::endl;
-				// std::cout << "eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
 			}
         }
 	} else if (key == GLFW_KEY_S) { // Backward
 		moving_forward = true;
-        // glm::dvec3 temp_displacement_ = displacement_ +  (double) zoom_speed_ * glm::dvec3(1.0f, 0.0f, 1.0f) * glm::dvec3(look_.x, look_.y, look_.z);
 
 		glm::vec3 pred_eye = eye_;
 		glm::vec3 pred_displacement = displacement_;
@@ -305,12 +226,7 @@ bool GUI::captureWASDUPDOWN(int key, int action)
         double top_height    = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) eye_y  + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
         double bottom_height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) feet_y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
         if (feet_y < 55.0 && (top_height > 0.0 || bottom_height > 0.0)) {
-            //std::cout << "eye_.x " << eye_.x << " eye_.y " << eye_.y << " eye_.z " << eye_.z << std::endl;
-            //std::cout << "Intersected: y " << eye_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
-            //return true;
         } else {
-            //std::cout << "not Intersected: y " << feet_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
-			//std::cout << "moving" << std::endl;
 			if (fps_mode_){
 				displacement_ -= zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
 				eye_          -= zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
@@ -325,10 +241,8 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 				} else if( eye_[2] > 50.0f){
 					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
 				}
-				// std::cout << "Eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
 			}
-				// eye_ += zoom_speed_ * look_;
-				
+
 			else {
 				displacement_ -= zoom_speed_ * look_;
 				eye_ -= zoom_speed_ * look_;
@@ -342,12 +256,10 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 				} else if( eye_[2] > 50.0f){
 					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
 				}
-				// std::cout << "eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
 			}
         }
 	} else if (key == GLFW_KEY_A) { // Strafe left
 		moving_forward = true;
-        // glm::dvec3 temp_displacement_ = displacement_ +  (double) zoom_speed_ * glm::dvec3(1.0f, 0.0f, 1.0f) * glm::dvec3(look_.x, look_.y, look_.z);
 
 		glm::vec3 pred_eye = eye_;
 		glm::vec3 pred_displacement = displacement_;
@@ -371,12 +283,7 @@ bool GUI::captureWASDUPDOWN(int key, int action)
         double top_height    = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) eye_y  + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
         double bottom_height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) feet_y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
         if (feet_y < 55.0 && (top_height > 0.0 || bottom_height > 0.0)) {
-            //std::cout << "eye_.x " << eye_.x << " eye_.y " << eye_.y << " eye_.z " << eye_.z << std::endl;
-            //std::cout << "Intersected: y " << eye_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
-            //return true;
         } else {
-            //std::cout << "not Intersected: y " << feet_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
-			//std::cout << "moving" << std::endl;
 			if (fps_mode_){
 				displacement_ -= pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
 				eye_          -= pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
@@ -391,10 +298,8 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 				} else if( eye_[2] > 50.0f){
 					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
 				}
-				// std::cout << "Eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
 			}
-				// eye_ += zoom_speed_ * look_;
-				
+
 			else {
 				displacement_ -= pan_speed_ * tangent_;
 				eye_ -= pan_speed_ * tangent_;
@@ -407,12 +312,10 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 				} else if( eye_[2] > 50.0f){
 					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
 				}
-				// std::cout << "eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
 			}
         }
 	} else if (key == GLFW_KEY_D) { // Strafe right
 		moving_forward = true;
-        // glm::dvec3 temp_displacement_ = displacement_ +  (double) zoom_speed_ * glm::dvec3(1.0f, 0.0f, 1.0f) * glm::dvec3(look_.x, look_.y, look_.z);
 
 		glm::vec3 pred_eye = eye_;
 		glm::vec3 pred_displacement = displacement_;
@@ -436,17 +339,11 @@ bool GUI::captureWASDUPDOWN(int key, int action)
         double top_height    = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) eye_y  + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
         double bottom_height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) feet_y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
         if (feet_y < 55.0 && (top_height > 0.0 || bottom_height > 0.0)) {
-            //std::cout << "eye_.x " << eye_.x << " eye_.y " << eye_.y << " eye_.z " << eye_.z << std::endl;
-            //std::cout << "Intersected: y " << eye_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
-            //return true;
         } else {
-            //std::cout << "not Intersected: y " << feet_y << " top_height: " << top_height << " bottom_height: " << bottom_height << std::endl;
-			//std::cout << "moving" << std::endl;
 			if (fps_mode_){
 				displacement_ += pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
 				eye_          += pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
 
-				// For within block movement at center of world
 				if(eye_[0] < 45.0f){
 					eye_[0] = (eye_[0] - 45.0f) + 50.0f;
 				} else if( eye_[0] > 50.0f){
@@ -456,10 +353,8 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 				} else if( eye_[2] > 50.0f){
 					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
 				}
-				// std::cout << "Eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
 			}
-				// eye_ += zoom_speed_ * look_;
-				
+
 			else {
 				displacement_ += pan_speed_ * tangent_;
 				eye_ += pan_speed_ * tangent_;
@@ -472,14 +367,12 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 				} else if( eye_[2] > 50.0f){
 					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
 				}
-				// std::cout << "eye_x: " << eye_[0] << " eye_y: " << eye_[1] << " eye_z: " << eye_[2] << std::endl;
 			}
         }
 	}
     
     if (key == GLFW_KEY_DOWN) { // Jump
 		if (fps_mode_){
-			// eye_ -= pan_speed_ * directup;
             feet_above_ground = true;
             y_velocity = 6.5f;
         }
@@ -488,11 +381,8 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 		return true;
 	} if (key == GLFW_KEY_SPACE && !feet_above_ground) { // Jump
 		if (fps_mode_){
-			// eye_ += 15.0f * directup;
             just_jumped = true;
             feet_above_ground = true;
-            // y_velocity = 6.5f;
-            // feet_above_ground = true;
         }
 		else
 			center_ += pan_speed_ * directup;
@@ -508,7 +398,6 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 }
 
 
-// Delegrate to the actual GUI object.
 void GUI::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	GUI* gui = (GUI*)glfwGetWindowUserPointer(window);
