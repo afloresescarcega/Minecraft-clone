@@ -1,0 +1,160 @@
+name: Build, Test, and SonarCloud Analysis
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build-and-analyze:
+    name: Build, Test, and Analyze
+    runs-on: ubuntu-latest
+    env:
+      BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Shallow clones should be disabled for better relevancy of analysis
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          cmake \
+          build-essential \
+          lcov \
+          libglew-dev \
+          libglfw3-dev \
+          libjpeg-dev \
+          libgl1-mesa-dev \
+          libglu1-mesa-dev
+
+    - name: Install SonarQube Build Wrapper
+      uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v6
+
+    - name: Build and test with coverage (wrapped for SonarCloud)
+      run: |
+        # Clean any previous builds
+        rm -rf build_coverage
+
+        # Create build directory
+        mkdir build_coverage
+        cd build_coverage
+
+        # Configure with coverage flags
+        cmake -DCMAKE_BUILD_TYPE=Coverage \
+              -DCMAKE_CXX_FLAGS="--coverage -fprofile-arcs -ftest-coverage" \
+              -DCMAKE_C_FLAGS="--coverage -fprofile-arcs -ftest-coverage" \
+              -DBUILD_TESTS_ONLY=ON \
+              ..
+
+        # Build with build-wrapper for SonarCloud
+        build-wrapper-linux-x86-64 --out-dir ../${{ env.BUILD_WRAPPER_OUT_DIR }} make clean all
+
+        # Run tests to generate coverage data
+        cd tests
+        ctest --output-on-failure
+        cd ..
+
+        # Generate .gcov files for SonarCloud
+        echo "Generating .gcov files for SonarCloud..."
+        mkdir -p gcov_reports
+
+        # Find all .gcda files and generate .gcov files
+        find . -name "*.gcda" -exec gcov -pb {} \; > /dev/null 2>&1 || true
+
+        # Move .gcov files to gcov_reports directory, excluding system/test files
+        find . -name "*.gcov" | while read gcov_file; do
+          # Skip system, test, and external library files
+          if ! echo "$gcov_file" | grep -qE '(/usr/|/Applications/|googletest|gtest|gmock|_deps|tests/|build_coverage/)'; then
+            mv "$gcov_file" gcov_reports/ 2>/dev/null || true
+          else
+            rm -f "$gcov_file" 2>/dev/null || true
+          fi
+        done
+
+        echo "Generated $(ls gcov_reports/*.gcov 2>/dev/null | wc -l) .gcov files for SonarCloud"
+
+        # Generate LCOV coverage report for HTML viewing
+        lcov --capture \
+             --directory . \
+             --output-file coverage.info \
+             --base-directory /home/runner/work/Minecraft-clone/Minecraft-clone \
+             --ignore-errors inconsistent,negative,mismatch,format \
+             --rc derive_function_end_line=0 \
+             --rc geninfo_auto_base=1
+
+        # Filter out external/test files
+        lcov --remove coverage.info \
+             '/usr/*' \
+             '/Applications/*' \
+             '*/googletest/*' \
+             '*/gtest/*' \
+             '*/gmock/*' \
+             '*/_deps/*' \
+             '*/tests/*' \
+             '*/build_coverage/*' \
+             '*/c++/*' \
+             --output-file coverage_filtered.info \
+             --ignore-errors unused
+
+        # Generate HTML report
+        genhtml coverage_filtered.info \
+                --output-directory coverage_report \
+                --ignore-errors source
+
+        echo "Coverage report generated!"
+        lcov --summary coverage_filtered.info
+
+    - name: Display coverage summary
+      run: |
+        echo "Coverage report generated!"
+        if [ -f build_coverage/coverage_filtered.info ]; then
+          echo "LCOV coverage file created successfully"
+          echo "========================================"
+          echo "Coverage file contents:"
+          head -50 build_coverage/coverage_filtered.info
+          echo "========================================"
+          echo "Coverage summary:"
+          lcov --summary build_coverage/coverage_filtered.info
+        else
+          echo "Warning: coverage_filtered.info not found"
+          ls -la build_coverage/ || true
+        fi
+
+    - name: Upload coverage artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: |
+          build_coverage/coverage_report/
+          build_coverage/coverage_filtered.info
+        retention-days: 30
+
+    - name: SonarQube Scan
+      uses: SonarSource/sonarqube-scan-action@v6
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: https://sonarqube.us
+
+    - name: Comment coverage on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+
+          // Read coverage info if available
+          let coverageMessage = '## Test Coverage Report\n\n';
+          coverageMessage += '✅ All tests passed!\n\n';
+          coverageMessage += 'Coverage details are available in [SonarCloud](https://sonarcloud.io/project/overview?id=afloresescarcega_Minecraft-clone)\n';
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: coverageMessage
+          });
