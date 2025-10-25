@@ -48,7 +48,7 @@ jobs:
         cmake -DCMAKE_BUILD_TYPE=Coverage \
               -DCMAKE_CXX_FLAGS="--coverage -fprofile-arcs -ftest-coverage" \
               -DCMAKE_C_FLAGS="--coverage -fprofile-arcs -ftest-coverage" \
-              -DBUILD_TESTS_ONLY=ON \
+              -DBUILD_TESTS=ON \
               ..
 
         # Build with build-wrapper for SonarCloud
