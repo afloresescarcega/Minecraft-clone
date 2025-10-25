@@ -39,27 +39,30 @@ jobs:
     - name: Build and test with coverage (wrapped for SonarCloud)
       run: |
         # Clean any previous builds
-        rm -rf build_coverage
+        rm -rf build_full build_coverage
 
         # Create build wrapper output directory for SonarCloud
         mkdir -p ${{ env.BUILD_WRAPPER_OUT_DIR }}
 
-        # Create build directory for full compilation database
-        mkdir build_full
+        # Configure and build the full project with build-wrapper so every TU is analyzed
+        mkdir -p build_full
         cd build_full
 
-        # Generate compilation database with full build (but don't actually build)
         cmake -DCMAKE_BUILD_TYPE=Debug \
               -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
               -DBUILD_TESTS=ON \
               ..
 
+        # Build the entire project under build-wrapper to capture all sources
+        build-wrapper-linux-x86-64 --out-dir ../${{ env.BUILD_WRAPPER_OUT_DIR }} \
+          cmake --build . -- -j"$(nproc)"
+
         # Copy compilation database for SonarCloud
         cp compile_commands.json ../${{ env.BUILD_WRAPPER_OUT_DIR }}/
         cd ..
 
-        # Now build tests only with coverage
-        mkdir build_coverage
+        # Now build tests with coverage instrumentation (not wrapped)
+        mkdir -p build_coverage
         cd build_coverage
 
         # Configure with coverage flags - tests only to avoid library build issues
@@ -69,8 +72,8 @@ jobs:
               -DBUILD_TESTS_ONLY=ON \
               ..
 
-        # Build with build-wrapper for SonarCloud
-        build-wrapper-linux-x86-64 --out-dir ../${{ env.BUILD_WRAPPER_OUT_DIR }} make clean all
+        # Build the coverage-enabled tests
+        cmake --build . -- -j"$(nproc)"
 
         # Run tests to generate coverage data
         cd tests

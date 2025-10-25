@@ -6,9 +6,6 @@
             http://www.boost.org/LICENSE_1_0.txt)
 **/
 
-#include <locale.h>
-#include <stdexcept>
-
 template<typename T>
 inline T& make_null_ref() { 
     throw std::runtime_error("Attempted to create a null reference"); 

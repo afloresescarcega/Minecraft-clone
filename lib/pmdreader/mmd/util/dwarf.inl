@@ -9,19 +9,8 @@
 #ifndef __DWARF_HXX_5E76A470D59B9F42253757ECA0701149_INCLUDED__
 #define __DWARF_HXX_5E76A470D59B9F42253757ECA0701149_INCLUDED__
 
-namespace std {
-    typedef std::basic_string<wchar_t> wstring;
-
-#ifndef MMD_USE_CSTDINT
-    typedef unsigned __int8 uint8_t;
-    typedef unsigned __int16 uint16_t;
-    typedef unsigned __int32 uint32_t;
-    typedef __int8 int8_t;
-    typedef __int16 int16_t;
-    typedef __int32 int32_t;
-#endif
-
-} /* End of namespace std */
+#include <locale.h>
+#include <stdexcept>
 
 namespace mmd {
 
