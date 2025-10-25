@@ -41,6 +41,9 @@ jobs:
         # Clean any previous builds
         rm -rf build_coverage
 
+        # Create build wrapper output directory for SonarCloud
+        mkdir -p ${{ env.BUILD_WRAPPER_OUT_DIR }}
+
         # Create build directory for full compilation database
         mkdir build_full
         cd build_full
