@@ -1,4 +1,19 @@
 build/
+build_test/
+build_coverage/
 .vscode/
 .idea
 cmake-build-debug
+
+# Test artifacts
+*.gcov
+*.gcda
+*.gcno
+
+# Coverage reports
+coverage_report/
+coverage.info
+coverage_filtered.info
+
+# Temporary test files
+tests/*.bmp

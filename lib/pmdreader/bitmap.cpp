@@ -32,17 +32,22 @@ bool readBMP(const char *fname, Image& image)
 
 	pos = bmfh.bfOffBits; 
  
-	ret += fread( &bmih, sizeof(BMP_BITMAPINFOHEADER), 1, file ); 
+	ret += fread( &bmih, sizeof(BMP_BITMAPINFOHEADER), 1, file );
 
-	if (ret == 0)
+	if (ret == 0) {
+		fclose(file);
 		return false;
+	}
  
 	// error checking
 	if ( bmfh.bfType!= 0x4d42 ) {	// "BM" actually
+		fclose(file);
 		return false;
 	}
-	if ( bmih.biBitCount != 24 )  
-		return false; 
+	if ( bmih.biBitCount != 24 ) {
+		fclose(file);
+		return false;
+	} 
 /*
  	if ( bmih.biCompression != BMP_BI_RGB ) {
 		return NULL;
@@ -65,9 +70,10 @@ bool readBMP(const char *fname, Image& image)
 	image.bytes.resize(bytes);
 	unsigned char *data = image.bytes.data();
 
-	int foo = fread( data, bytes, 1, file ); 
-	
+	int foo = fread( data, bytes, 1, file );
+
 	if (!foo) {
+		fclose(file);
 		return false;
 	}
 

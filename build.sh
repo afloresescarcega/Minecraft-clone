@@ -9,6 +9,6 @@ if [ -d "build" ]; then
 fi
 
 mkdir "build"
-cd build
+cd build || exit
 cmake -D CMAKE_PREFIX_PATH="/usr/local/opt/glew/lib;/usr/local/opt/glfw/lib" ..
 make
