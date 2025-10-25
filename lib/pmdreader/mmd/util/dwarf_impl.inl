@@ -7,6 +7,7 @@
 **/
 
 #include <locale.h>
+#include <stdexcept>
 
 template<typename T>
 inline T& make_null_ref() { 
