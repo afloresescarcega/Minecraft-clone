@@ -30,7 +30,8 @@ jobs:
           libglfw3-dev \
           libjpeg-dev \
           libgl1-mesa-dev \
-          libglu1-mesa-dev
+          libglu1-mesa-dev \
+          libglm-dev
 
     - name: Install SonarQube Build Wrapper
       uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v6
