@@ -41,15 +41,29 @@ jobs:
         # Clean any previous builds
         rm -rf build_coverage
 
-        # Create build directory
+        # Create build directory for full compilation database
+        mkdir build_full
+        cd build_full
+
+        # Generate compilation database with full build (but don't actually build)
+        cmake -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+              -DBUILD_TESTS=ON \
+              ..
+
+        # Copy compilation database for SonarCloud
+        cp compile_commands.json ../${{ env.BUILD_WRAPPER_OUT_DIR }}/
+        cd ..
+
+        # Now build tests only with coverage
         mkdir build_coverage
         cd build_coverage
 
-        # Configure with coverage flags
+        # Configure with coverage flags - tests only to avoid library build issues
         cmake -DCMAKE_BUILD_TYPE=Coverage \
               -DCMAKE_CXX_FLAGS="--coverage -fprofile-arcs -ftest-coverage" \
               -DCMAKE_C_FLAGS="--coverage -fprofile-arcs -ftest-coverage" \
-              -DBUILD_TESTS=ON \
+              -DBUILD_TESTS_ONLY=ON \
               ..
 
         # Build with build-wrapper for SonarCloud
