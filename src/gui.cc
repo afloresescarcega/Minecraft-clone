@@ -149,6 +149,18 @@ bool GUI::checkCollision(float x, float eye_y, float feet_y, float z, float d_x,
 	return feet_y < 55.0 && (top_height > 0.0 || bottom_height > 0.0);
 }
 
+void GUI::applyMovement(float speed, const glm::vec3& direction) {
+	glm::vec3 movement;
+	if (fps_mode_) {
+		movement = speed * glm::vec3(1.0f, 0.0f, 1.0f) * direction;
+	} else {
+		movement = speed * direction;
+	}
+	displacement_ += movement;
+	eye_ += movement;
+	wrapEyePosition();
+}
+
 bool GUI::captureWASDUPDOWN(int key, int action)
 {
     float d_x = displacement_[0];
@@ -184,20 +196,9 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 
         if (checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
         } else {
-			if (fps_mode_){
-				displacement_ += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
-				eye_          += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
-
-				wrapEyePosition();
-
-			}
-
-			else {
-				displacement_ += zoom_speed_ * look_;
-				eye_ += zoom_speed_ * look_;
-
+			applyMovement(zoom_speed_, look_);
+			if (!fps_mode_) {
 				std:: cout << eye_.y << std::endl;
-				wrapEyePosition();
 				std:: cout << eye_.y << std::endl;
 			}
         }
@@ -224,19 +225,7 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 
         if (checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
         } else {
-			if (fps_mode_){
-				displacement_ -= zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
-				eye_          -= zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
-
-				wrapEyePosition();
-			}
-
-			else {
-				displacement_ -= zoom_speed_ * look_;
-				eye_ -= zoom_speed_ * look_;
-
-				wrapEyePosition();
-			}
+			applyMovement(-zoom_speed_, look_);
         }
 	} else if (key == GLFW_KEY_A) { // Strafe left
 		moving_forward = true;
@@ -261,18 +250,7 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 
         if (checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
         } else {
-			if (fps_mode_){
-				displacement_ -= pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
-				eye_          -= pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
-
-				wrapEyePosition();
-			}
-
-			else {
-				displacement_ -= pan_speed_ * tangent_;
-				eye_ -= pan_speed_ * tangent_;
-				wrapEyePosition();
-			}
+			applyMovement(-pan_speed_, tangent_);
         }
 	} else if (key == GLFW_KEY_D) { // Strafe right
 		moving_forward = true;
@@ -297,21 +275,10 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 
         if (checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
         } else {
-			if (fps_mode_){
-				displacement_ += pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
-				eye_          += pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
-
-				wrapEyePosition();
-			}
-
-			else {
-				displacement_ += pan_speed_ * tangent_;
-				eye_ += pan_speed_ * tangent_;
-				wrapEyePosition();
-			}
+			applyMovement(pan_speed_, tangent_);
         }
 	}
-    
+
     if (key == GLFW_KEY_DOWN) { // Jump
 		if (fps_mode_){
             feet_above_ground = true;
