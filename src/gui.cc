@@ -28,7 +28,7 @@ GUI::GUI(GLFWwindow* window, PerlinNoise *pn_, int view_width, int view_height, 
 		view_width_ = view_width;
 		view_height_ = view_height;
 	}
-	float aspect_ = static_cast<float>(view_width_) / view_height_;
+	aspect_ = static_cast<float>(view_width_) / static_cast<float>(view_height_);
 	projection_matrix_ = glm::perspective((float)(kFov * (M_PI / 180.0f)), aspect_, kNear, kFar);
     pn = pn_;
 }
