@@ -4,7 +4,7 @@
 extern "C" {
 #endif
 
-// Window handle type - forward declaration
+// Window handle type
 typedef struct GLFWwindow GLFWwindow;
 
 // Key codes

@@ -52,12 +52,52 @@ target_link_libraries(debuggl_test PRIVATE
 
 gtest_discover_tests(debuggl_test)
 
+# GUI tests - build with stubbed OpenGL/GLFW headers and GLM
+add_executable(gui_test
+  gui_test.cpp
+  ${CMAKE_SOURCE_DIR}/src/gui.cc
+)
+
+# Find GLM
+find_package(PkgConfig)
+if(PkgConfig_FOUND)
+  pkg_check_modules(GLM glm)
+endif()
+
+target_include_directories(gui_test BEFORE PRIVATE
+  ${CMAKE_SOURCE_DIR}/tests/stubs
+)
+
+target_include_directories(gui_test PRIVATE
+  ${CMAKE_SOURCE_DIR}/src
+  ${CMAKE_SOURCE_DIR}/lib/pmdreader
+  ${CMAKE_SOURCE_DIR}/lib/utgraphicsutil
+  ${CMAKE_SOURCE_DIR}/lib
+)
+
+target_include_directories(gui_test SYSTEM PRIVATE
+  ${GLM_INCLUDE_DIRS}
+)
+
+target_compile_definitions(gui_test PRIVATE
+  GLM_ENABLE_EXPERIMENTAL
+)
+
+target_link_libraries(gui_test PRIVATE
+  GTest::gtest_main
+)
+
+gtest_discover_tests(gui_test)
+
 # Code coverage configuration (for gcov/lcov)
-if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
+# Support both "Coverage" and "Debug-Coverage" build types
+if(CMAKE_BUILD_TYPE MATCHES "Coverage")
   if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    target_compile_options(bitmap_test PRIVATE --coverage)
+    target_compile_options(bitmap_test PRIVATE --coverage -fprofile-arcs -ftest-coverage)
     target_link_options(bitmap_test PRIVATE --coverage)
-    target_compile_options(debuggl_test PRIVATE --coverage)
+    target_compile_options(debuggl_test PRIVATE --coverage -fprofile-arcs -ftest-coverage)
     target_link_options(debuggl_test PRIVATE --coverage)
+    target_compile_options(gui_test PRIVATE --coverage -fprofile-arcs -ftest-coverage)
+    target_link_options(gui_test PRIVATE --coverage)
   endif()
 endif()

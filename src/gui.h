@@ -22,6 +22,16 @@ struct Collisions {
     Collisions(glm::vec3 bMin, glm::vec3 bMax) : bMin(bMin), bMax(bMax) {}
 };
 
+struct CollisionCoordinates {
+    float d_x;
+    float d_y;
+    float d_z;
+    float x;
+    float eye_y;
+    float feet_y;
+    float z;
+};
+
 class GUI {
 public:
 	GUI(GLFWwindow*,  PerlinNoise *pn_, int view_width = -1, int view_height = -1, int preview_height = -1);
@@ -54,7 +64,7 @@ public:
 	bool isPlaying() const { return play_; }
 	float getCurrentPlayTime() const;
 
-    const float CAMERA_SPEED = .00001f;
+	const float CAMERA_SPEED = .00001f;
     int window_width = 800, window_height = 600;
     float window_center_x = static_cast<float>(window_width) / 2.0;
     float window_center_y = static_cast<float>(window_height) / 2.0; 
@@ -125,6 +135,11 @@ public:
 	bool captureWASDUPDOWN(int key, int action);
 
 	bool play_ = false;
+private:
+	void wrapEyePosition();
+	bool checkCollision(float x, float eye_y, float feet_y, float z, float d_x, float d_y, float d_z) const;
+	void applyMovement(float speed, const glm::vec3& direction);
+	CollisionCoordinates extractCoordinates(const glm::vec3& pred_eye, const glm::vec3& pred_displacement) const;
 };
 
 #endif
