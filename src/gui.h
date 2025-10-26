@@ -23,8 +23,13 @@ struct Collisions {
 };
 
 struct CollisionCoordinates {
-    float d_x, d_y, d_z;        // displacement components
-    float x, eye_y, feet_y, z;  // tile coordinates
+    float d_x;
+    float d_y;
+    float d_z;
+    float x;
+    float eye_y;
+    float feet_y;
+    float z;
 };
 
 class GUI {
