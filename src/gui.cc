@@ -194,8 +194,7 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 		extractCoordinates(pred_eye, pred_displacement, d_x, d_y, d_z, x, eye_y, feet_y, z);
 
 
-        if (checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
-        } else {
+        if (!checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
 			applyMovement(zoom_speed_, look_);
 			if (!fps_mode_) {
 				std:: cout << eye_.y << std::endl;
@@ -211,8 +210,7 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 
 		extractCoordinates(pred_eye, pred_displacement, d_x, d_y, d_z, x, eye_y, feet_y, z);
 
-        if (checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
-        } else {
+        if (!checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
 			applyMovement(-zoom_speed_, look_);
         }
 	} else if (key == GLFW_KEY_A) { // Strafe left
@@ -224,8 +222,7 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 
 		extractCoordinates(pred_eye, pred_displacement, d_x, d_y, d_z, x, eye_y, feet_y, z);
 
-        if (checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
-        } else {
+        if (!checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
 			applyMovement(-pan_speed_, tangent_);
         }
 	} else if (key == GLFW_KEY_D) { // Strafe right
@@ -237,8 +234,7 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 
 		extractCoordinates(pred_eye, pred_displacement, d_x, d_y, d_z, x, eye_y, feet_y, z);
 
-        if (checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
-        } else {
+        if (!checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
 			applyMovement(pan_speed_, tangent_);
         }
 	}
