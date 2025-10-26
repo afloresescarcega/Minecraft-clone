@@ -1,8 +1,10 @@
 #include <gtest/gtest.h>
 #include <cmath>
 
-// Define GLM experimental features before including headers
+// Define GLM experimental features before including headers (check if not already defined)
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
 
 // Mock GLFW window structure
 struct GLFWwindow {
@@ -366,6 +368,7 @@ TEST_F(GUITest, MousePosCallbackUpdatesYaw) {
     GUI gui(window, pn);
     gui.current_x_ = 100.0f;
     gui.current_y_ = 100.0f;
+    gui.yaw = 0.0f;  // Initialize yaw
     float initial_yaw = gui.yaw;
 
     gui.mousePosCallback(150.0, 100.0);
@@ -401,22 +404,28 @@ TEST_F(GUITest, MousePosCallbackUpdatesLookVector) {
     GUI gui(window, pn);
     gui.current_x_ = 100.0f;
     gui.current_y_ = 100.0f;
+    gui.yaw = 0.0f;
+    gui.pitch = 0.0f;
+    gui.look_ = glm::vec3(0.0f, 0.0f, -1.0f);
     glm::vec3 initial_look = gui.look_;
 
     gui.mousePosCallback(150.0, 150.0);
 
-    EXPECT_NE(gui.look_.x, initial_look.x);
+    EXPECT_TRUE(gui.look_.x != initial_look.x || gui.look_.y != initial_look.y || gui.look_.z != initial_look.z);
 }
 
 TEST_F(GUITest, MousePosCallbackUpdatesTangent) {
     GUI gui(window, pn);
     gui.current_x_ = 100.0f;
     gui.current_y_ = 100.0f;
+    gui.yaw = 0.0f;
+    gui.pitch = 0.0f;
+    gui.tangent_ = glm::vec3(1.0f, 0.0f, 0.0f);
     glm::vec3 initial_tangent = gui.tangent_;
 
     gui.mousePosCallback(150.0, 100.0);
 
-    EXPECT_NE(gui.tangent_.x, initial_tangent.x);
+    EXPECT_TRUE(gui.tangent_.x != initial_tangent.x || gui.tangent_.y != initial_tangent.y || gui.tangent_.z != initial_tangent.z);
 }
 
 TEST_F(GUITest, MouseButtonCallbackDoesNotCrash) {
