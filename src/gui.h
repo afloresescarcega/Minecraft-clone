@@ -22,6 +22,11 @@ struct Collisions {
     Collisions(glm::vec3 bMin, glm::vec3 bMax) : bMin(bMin), bMax(bMax) {}
 };
 
+struct CollisionCoordinates {
+    float d_x, d_y, d_z;        // displacement components
+    float x, eye_y, feet_y, z;  // tile coordinates
+};
+
 class GUI {
 public:
 	GUI(GLFWwindow*,  PerlinNoise *pn_, int view_width = -1, int view_height = -1, int preview_height = -1);
@@ -129,9 +134,7 @@ private:
 	void wrapEyePosition();
 	bool checkCollision(float x, float eye_y, float feet_y, float z, float d_x, float d_y, float d_z) const;
 	void applyMovement(float speed, const glm::vec3& direction);
-	void extractCoordinates(const glm::vec3& pred_eye, const glm::vec3& pred_displacement,
-	                        float& d_x, float& d_y, float& d_z,
-	                        float& x, float& eye_y, float& feet_y, float& z) const;
+	CollisionCoordinates extractCoordinates(const glm::vec3& pred_eye, const glm::vec3& pred_displacement) const;
 };
 
 #endif

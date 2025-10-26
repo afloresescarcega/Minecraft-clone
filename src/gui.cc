@@ -161,27 +161,20 @@ void GUI::applyMovement(float speed, const glm::vec3& direction) {
 	wrapEyePosition();
 }
 
-void GUI::extractCoordinates(const glm::vec3& pred_eye, const glm::vec3& pred_displacement,
-                             float& d_x, float& d_y, float& d_z,
-                             float& x, float& eye_y, float& feet_y, float& z) const {
-	d_x = pred_displacement[0];
-	d_y = pred_displacement[1];
-	d_z = pred_displacement[2];
-	x = kTileLen* floor(pred_eye[0]/kTileLen);
-	eye_y  = kTileLen* floor(pred_eye[1]/kTileLen);
-	feet_y = kTileLen* floor((pred_eye[1] - kTileLen)/kTileLen);
-	z = kTileLen* floor(pred_eye[2]/kTileLen);
+CollisionCoordinates GUI::extractCoordinates(const glm::vec3& pred_eye, const glm::vec3& pred_displacement) const {
+	return {
+		pred_displacement[0],
+		pred_displacement[1],
+		pred_displacement[2],
+		kTileLen * floor(pred_eye[0]/kTileLen),
+		kTileLen * floor(pred_eye[1]/kTileLen),
+		kTileLen * floor((pred_eye[1] - kTileLen)/kTileLen),
+		kTileLen * floor(pred_eye[2]/kTileLen)
+	};
 }
 
 bool GUI::captureWASDUPDOWN(int key, int action)
 {
-    float d_x = displacement_[0];
-    float d_y = displacement_[1];
-    float d_z = displacement_[2];
-    float x = kTileLen* floor(eye_[0]/kTileLen);
-    float eye_y  = kTileLen* floor(eye_[1]/kTileLen);
-    float feet_y = kTileLen* floor((eye_[1] - kTileLen)/kTileLen);
-    float z = kTileLen* floor(eye_[2]/kTileLen);
     moving_forward = false;
     glm::vec3 directup = glm::vec3(0.0f, 1.0f, 0.0f);
 	if (key == GLFW_KEY_W && action != GLFW_RELEASE) { // Forward
@@ -191,10 +184,9 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 		glm::vec3 pred_eye = eye_ + movement;
 		glm::vec3 pred_displacement = displacement_ + glm::dvec3(movement);
 
-		extractCoordinates(pred_eye, pred_displacement, d_x, d_y, d_z, x, eye_y, feet_y, z);
+		auto coords = extractCoordinates(pred_eye, pred_displacement);
 
-
-        if (!checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
+        if (!checkCollision(coords.x, coords.eye_y, coords.feet_y, coords.z, coords.d_x, coords.d_y, coords.d_z)) {
 			applyMovement(zoom_speed_, look_);
 			if (!fps_mode_) {
 				std:: cout << eye_.y << std::endl;
@@ -208,9 +200,9 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 		glm::vec3 pred_eye = eye_ + movement;
 		glm::vec3 pred_displacement = displacement_ + glm::dvec3(movement);
 
-		extractCoordinates(pred_eye, pred_displacement, d_x, d_y, d_z, x, eye_y, feet_y, z);
+		auto coords = extractCoordinates(pred_eye, pred_displacement);
 
-        if (!checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
+        if (!checkCollision(coords.x, coords.eye_y, coords.feet_y, coords.z, coords.d_x, coords.d_y, coords.d_z)) {
 			applyMovement(-zoom_speed_, look_);
         }
 	} else if (key == GLFW_KEY_A) { // Strafe left
@@ -220,9 +212,9 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 		glm::vec3 pred_eye = eye_ + movement;
 		glm::vec3 pred_displacement = displacement_ + glm::dvec3(movement);
 
-		extractCoordinates(pred_eye, pred_displacement, d_x, d_y, d_z, x, eye_y, feet_y, z);
+		auto coords = extractCoordinates(pred_eye, pred_displacement);
 
-        if (!checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
+        if (!checkCollision(coords.x, coords.eye_y, coords.feet_y, coords.z, coords.d_x, coords.d_y, coords.d_z)) {
 			applyMovement(-pan_speed_, tangent_);
         }
 	} else if (key == GLFW_KEY_D) { // Strafe right
@@ -232,9 +224,9 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 		glm::vec3 pred_eye = eye_ + movement;
 		glm::vec3 pred_displacement = displacement_ + glm::dvec3(movement);
 
-		extractCoordinates(pred_eye, pred_displacement, d_x, d_y, d_z, x, eye_y, feet_y, z);
+		auto coords = extractCoordinates(pred_eye, pred_displacement);
 
-        if (!checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
+        if (!checkCollision(coords.x, coords.eye_y, coords.feet_y, coords.z, coords.d_x, coords.d_y, coords.d_z)) {
 			applyMovement(pan_speed_, tangent_);
         }
 	}
