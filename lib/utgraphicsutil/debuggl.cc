@@ -17,7 +17,6 @@ const char *DebugGLErrorToString(const int error) {
         default:
             return "Unknown Error";
     }
-    return "Unknown Error";
 }
 
 void debugglTerminate() {
