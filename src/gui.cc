@@ -161,6 +161,18 @@ void GUI::applyMovement(float speed, const glm::vec3& direction) {
 	wrapEyePosition();
 }
 
+void GUI::extractCoordinates(const glm::vec3& pred_eye, const glm::vec3& pred_displacement,
+                             float& d_x, float& d_y, float& d_z,
+                             float& x, float& eye_y, float& feet_y, float& z) const {
+	d_x = pred_displacement[0];
+	d_y = pred_displacement[1];
+	d_z = pred_displacement[2];
+	x = kTileLen* floor(pred_eye[0]/kTileLen);
+	eye_y  = kTileLen* floor(pred_eye[1]/kTileLen);
+	feet_y = kTileLen* floor((pred_eye[1] - kTileLen)/kTileLen);
+	z = kTileLen* floor(pred_eye[2]/kTileLen);
+}
+
 bool GUI::captureWASDUPDOWN(int key, int action)
 {
     float d_x = displacement_[0];
@@ -175,23 +187,11 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 	if (key == GLFW_KEY_W && action != GLFW_RELEASE) { // Forward
         moving_forward = true;
 
-		glm::vec3 pred_eye = eye_;
-		glm::vec3 pred_displacement = displacement_;
-		if (fps_mode_) {
-			pred_displacement += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
-			pred_eye          += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
-		} else {
-			pred_displacement += zoom_speed_ * look_;
-			pred_eye += zoom_speed_ * look_;
-		}
+		glm::vec3 movement = fps_mode_ ? zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_ : zoom_speed_ * look_;
+		glm::vec3 pred_eye = eye_ + movement;
+		glm::vec3 pred_displacement = displacement_ + glm::dvec3(movement);
 
-		d_x = pred_displacement[0];
-		d_y = pred_displacement[1];
-		d_z = pred_displacement[2];
-		x = kTileLen* floor(pred_eye[0]/kTileLen);
-		eye_y  = kTileLen* floor(pred_eye[1]/kTileLen);
-		feet_y = kTileLen* floor((pred_eye[1] - kTileLen)/kTileLen);
-		z = kTileLen* floor(pred_eye[2]/kTileLen);
+		extractCoordinates(pred_eye, pred_displacement, d_x, d_y, d_z, x, eye_y, feet_y, z);
 
 
         if (checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
@@ -205,23 +205,11 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 	} else if (key == GLFW_KEY_S) { // Backward
 		moving_forward = true;
 
-		glm::vec3 pred_eye = eye_;
-		glm::vec3 pred_displacement = displacement_;
-		if (fps_mode_) {
-			pred_displacement -= zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
-			pred_eye          -= zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
-		} else {
-			pred_displacement -= zoom_speed_ * look_;
-			pred_eye -= zoom_speed_ * look_;
-		}
+		glm::vec3 movement = fps_mode_ ? -zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_ : -zoom_speed_ * look_;
+		glm::vec3 pred_eye = eye_ + movement;
+		glm::vec3 pred_displacement = displacement_ + glm::dvec3(movement);
 
-		d_x = pred_displacement[0];
-		d_y = pred_displacement[1];
-		d_z = pred_displacement[2];
-		x = kTileLen* floor(pred_eye[0]/kTileLen);
-		eye_y  = kTileLen* floor(pred_eye[1]/kTileLen);
-		feet_y = kTileLen* floor((pred_eye[1] - kTileLen)/kTileLen);
-		z = kTileLen* floor(pred_eye[2]/kTileLen);
+		extractCoordinates(pred_eye, pred_displacement, d_x, d_y, d_z, x, eye_y, feet_y, z);
 
         if (checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
         } else {
@@ -230,23 +218,11 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 	} else if (key == GLFW_KEY_A) { // Strafe left
 		moving_forward = true;
 
-		glm::vec3 pred_eye = eye_;
-		glm::vec3 pred_displacement = displacement_;
-		if (fps_mode_) {
-			pred_displacement -= pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
-			pred_eye          -= pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
-		} else {
-			pred_displacement -= pan_speed_ * tangent_;
-			pred_eye -= pan_speed_ * tangent_;
-		}
+		glm::vec3 movement = fps_mode_ ? -pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_ : -pan_speed_ * tangent_;
+		glm::vec3 pred_eye = eye_ + movement;
+		glm::vec3 pred_displacement = displacement_ + glm::dvec3(movement);
 
-		d_x = pred_displacement[0];
-		d_y = pred_displacement[1];
-		d_z = pred_displacement[2];
-		x = kTileLen* floor(pred_eye[0]/kTileLen);
-		eye_y  = kTileLen* floor(pred_eye[1]/kTileLen);
-		feet_y = kTileLen* floor((pred_eye[1] - kTileLen)/kTileLen);
-		z = kTileLen* floor(pred_eye[2]/kTileLen);
+		extractCoordinates(pred_eye, pred_displacement, d_x, d_y, d_z, x, eye_y, feet_y, z);
 
         if (checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
         } else {
@@ -255,23 +231,11 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 	} else if (key == GLFW_KEY_D) { // Strafe right
 		moving_forward = true;
 
-		glm::vec3 pred_eye = eye_;
-		glm::vec3 pred_displacement = displacement_;
-		if (fps_mode_) {
-			pred_displacement += pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
-			pred_eye          += pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
-		} else {
-			pred_displacement += pan_speed_ * tangent_;
-			pred_eye += pan_speed_ * tangent_;
-		}
+		glm::vec3 movement = fps_mode_ ? pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_ : pan_speed_ * tangent_;
+		glm::vec3 pred_eye = eye_ + movement;
+		glm::vec3 pred_displacement = displacement_ + glm::dvec3(movement);
 
-		d_x = pred_displacement[0];
-		d_y = pred_displacement[1];
-		d_z = pred_displacement[2];
-		x = kTileLen* floor(pred_eye[0]/kTileLen);
-		eye_y  = kTileLen* floor(pred_eye[1]/kTileLen);
-		feet_y = kTileLen* floor((pred_eye[1] - kTileLen)/kTileLen);
-		z = kTileLen* floor(pred_eye[2]/kTileLen);
+		extractCoordinates(pred_eye, pred_displacement, d_x, d_y, d_z, x, eye_y, feet_y, z);
 
         if (checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
         } else {

@@ -129,6 +129,9 @@ private:
 	void wrapEyePosition();
 	bool checkCollision(float x, float eye_y, float feet_y, float z, float d_x, float d_y, float d_z) const;
 	void applyMovement(float speed, const glm::vec3& direction);
+	void extractCoordinates(const glm::vec3& pred_eye, const glm::vec3& pred_displacement,
+	                        float& d_x, float& d_y, float& d_z,
+	                        float& x, float& eye_y, float& feet_y, float& z) const;
 };
 
 #endif
