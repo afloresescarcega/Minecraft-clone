@@ -54,7 +54,7 @@ public:
 	bool isPlaying() const { return play_; }
 	float getCurrentPlayTime() const;
 
-    const float CAMERA_SPEED = .00001f;
+	const float CAMERA_SPEED = .00001f;
     int window_width = 800, window_height = 600;
     float window_center_x = static_cast<float>(window_width) / 2.0;
     float window_center_y = static_cast<float>(window_height) / 2.0; 
@@ -125,6 +125,8 @@ public:
 	bool captureWASDUPDOWN(int key, int action);
 
 	bool play_ = false;
+private:
+	void wrapEyePosition();
 };
 
 #endif

@@ -127,6 +127,21 @@ float GUI::getCurrentPlayTime() const
 }
 
 
+void GUI::wrapEyePosition() {
+	//This creates a "torus-like" world where moving off one edge teleports you to the opposite edge,
+	//keeping the player always within a 5-unit cube centered at (47.5, y, 47.5).
+	// For within block movement at center of world
+	if (eye_[0] < 45.0f) {
+		eye_[0] = (eye_[0] - 45.0f) + 50.0f;
+	} else if (eye_[0] > 50.0f) {
+		eye_[0] = (eye_[0] - 50.0f) + 45.0f;
+	} else if (eye_[2] < 45.0f) {
+		eye_[2] = (eye_[2] - 45.0f) + 50.0f;
+	} else if (eye_[2] > 50.0f) {
+		eye_[2] = (eye_[2] - 50.0f) + 45.0f;
+	}
+}
+
 bool GUI::captureWASDUPDOWN(int key, int action)
 {
     float d_x = displacement_[0];
@@ -170,16 +185,7 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 				displacement_ += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
 				eye_          += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
 
-				// For within block movement at center of world
-				if(eye_[0] < 45.0f){
-					eye_[0] = (eye_[0] - 45.0f) + 50.0f;
-				} else if( eye_[0] > 50.0f){
-					eye_[0] = (eye_[0] - 50.0f) + 45.0f;
-				} else if(eye_[2] < 45.0f){
-					eye_[2] = (eye_[2] - 45.0f) + 50.0f;
-				} else if( eye_[2] > 50.0f){
-					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
-				}
+				wrapEyePosition();
 
 			}
 
@@ -188,15 +194,7 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 				eye_ += zoom_speed_ * look_;
 
 				std:: cout << eye_.y << std::endl;
-				if(eye_[0] < 45.0f){
-					eye_[0] = (eye_[0] - 45.0f) + 50.0f;
-				} else if( eye_[0] > 50.0f){
-					eye_[0] = (eye_[0] - 50.0f) + 45.0f;
-				} else if(eye_[2] < 45.0f){
-					eye_[2] = (eye_[2] - 45.0f) + 50.0f;
-				} else if( eye_[2] > 50.0f){
-					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
-				}
+				wrapEyePosition();
 				std:: cout << eye_.y << std::endl;
 			}
         }
@@ -229,31 +227,14 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 				displacement_ -= zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
 				eye_          -= zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
 
-				// For within block movement at center of world
-				if(eye_[0] < 45.0f){
-					eye_[0] = (eye_[0] - 45.0f) + 50.0f;
-				} else if( eye_[0] > 50.0f){
-					eye_[0] = (eye_[0] - 50.0f) + 45.0f;
-				} else if(eye_[2] < 45.0f){
-					eye_[2] = (eye_[2] - 45.0f) + 50.0f;
-				} else if( eye_[2] > 50.0f){
-					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
-				}
+				wrapEyePosition();
 			}
 
 			else {
 				displacement_ -= zoom_speed_ * look_;
 				eye_ -= zoom_speed_ * look_;
 
-				if(eye_[0] < 45.0f){
-					eye_[0] = (eye_[0] - 45.0f) + 50.0f;
-				} else if( eye_[0] > 50.0f){
-					eye_[0] = (eye_[0] - 50.0f) + 45.0f;
-				} else if(eye_[2] < 45.0f){
-					eye_[2] = (eye_[2] - 45.0f) + 50.0f;
-				} else if( eye_[2] > 50.0f){
-					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
-				}
+				wrapEyePosition();
 			}
         }
 	} else if (key == GLFW_KEY_A) { // Strafe left
@@ -286,30 +267,13 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 				displacement_ -= pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
 				eye_          -= pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
 
-				// For within block movement at center of world
-				if(eye_[0] < 45.0f){
-					eye_[0] = (eye_[0] - 45.0f) + 50.0f;
-				} else if( eye_[0] > 50.0f){
-					eye_[0] = (eye_[0] - 50.0f) + 45.0f;
-				} else if(eye_[2] < 45.0f){
-					eye_[2] = (eye_[2] - 45.0f) + 50.0f;
-				} else if( eye_[2] > 50.0f){
-					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
-				}
+				wrapEyePosition();
 			}
 
 			else {
 				displacement_ -= pan_speed_ * tangent_;
 				eye_ -= pan_speed_ * tangent_;
-				if(eye_[0] < 45.0f){
-					eye_[0] = (eye_[0] - 45.0f) + 50.0f;
-				} else if( eye_[0] > 50.0f){
-					eye_[0] = (eye_[0] - 50.0f) + 45.0f;
-				} else if(eye_[2] < 45.0f){
-					eye_[2] = (eye_[2] - 45.0f) + 50.0f;
-				} else if( eye_[2] > 50.0f){
-					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
-				}
+				wrapEyePosition();
 			}
         }
 	} else if (key == GLFW_KEY_D) { // Strafe right
@@ -342,29 +306,13 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 				displacement_ += pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
 				eye_          += pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
 
-				if(eye_[0] < 45.0f){
-					eye_[0] = (eye_[0] - 45.0f) + 50.0f;
-				} else if( eye_[0] > 50.0f){
-					eye_[0] = (eye_[0] - 50.0f) + 45.0f;
-				} else if(eye_[2] < 45.0f){
-					eye_[2] = (eye_[2] - 45.0f) + 50.0f;
-				} else if( eye_[2] > 50.0f){
-					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
-				}
+				wrapEyePosition();
 			}
 
 			else {
 				displacement_ += pan_speed_ * tangent_;
 				eye_ += pan_speed_ * tangent_;
-				if(eye_[0] < 45.0f){
-					eye_[0] = (eye_[0] - 45.0f) + 50.0f;
-				} else if( eye_[0] > 50.0f){
-					eye_[0] = (eye_[0] - 50.0f) + 45.0f;
-				} else if(eye_[2] < 45.0f){
-					eye_[2] = (eye_[2] - 45.0f) + 50.0f;
-				} else if( eye_[2] > 50.0f){
-					eye_[2] = (eye_[2] - 50.0f) + 45.0f;
-				}
+				wrapEyePosition();
 			}
         }
 	}
