@@ -142,6 +142,13 @@ void GUI::wrapEyePosition() {
 	}
 }
 
+bool GUI::checkCollision(float x, float eye_y, float feet_y, float z, float d_x, float d_y, float d_z) const {
+	// negative heights mean air block
+	double top_height    = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) eye_y  + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
+	double bottom_height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) feet_y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
+	return feet_y < 55.0 && (top_height > 0.0 || bottom_height > 0.0);
+}
+
 bool GUI::captureWASDUPDOWN(int key, int action)
 {
     float d_x = displacement_[0];
@@ -175,11 +182,7 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 		z = kTileLen* floor(pred_eye[2]/kTileLen);
 
 
-		// negative heights mean air block		
-        double top_height    = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) eye_y  + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
-        double bottom_height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) feet_y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
-
-        if (feet_y < 55.0 && (top_height > 0.0 || bottom_height > 0.0)) {
+        if (checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
         } else {
 			if (fps_mode_){
 				displacement_ += zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
@@ -219,9 +222,7 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 		feet_y = kTileLen* floor((pred_eye[1] - kTileLen)/kTileLen);
 		z = kTileLen* floor(pred_eye[2]/kTileLen);
 
-        double top_height    = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) eye_y  + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
-        double bottom_height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) feet_y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
-        if (feet_y < 55.0 && (top_height > 0.0 || bottom_height > 0.0)) {
+        if (checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
         } else {
 			if (fps_mode_){
 				displacement_ -= zoom_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * look_;
@@ -258,10 +259,7 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 		feet_y = kTileLen* floor((pred_eye[1] - kTileLen)/kTileLen);
 		z = kTileLen* floor(pred_eye[2]/kTileLen);
 
-		// negative heights mean air block		
-        double top_height    = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) eye_y  + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
-        double bottom_height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) feet_y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
-        if (feet_y < 55.0 && (top_height > 0.0 || bottom_height > 0.0)) {
+        if (checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
         } else {
 			if (fps_mode_){
 				displacement_ -= pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
@@ -297,10 +295,7 @@ bool GUI::captureWASDUPDOWN(int key, int action)
 		feet_y = kTileLen* floor((pred_eye[1] - kTileLen)/kTileLen);
 		z = kTileLen* floor(pred_eye[2]/kTileLen);
 
-		// negative heights mean air block		
-        double top_height    = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) eye_y  + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
-        double bottom_height = pn->octaveNoise(1/30.0f * ((double) x  + kTileLen* floor(d_x/kTileLen)) + .01, 1/30.0f * ((double) feet_y + kTileLen* floor(d_y/kTileLen))+ .01, 1/30.0f * ((double) z +kTileLen * floor(d_z/kTileLen))+ .01, 3);
-        if (feet_y < 55.0 && (top_height > 0.0 || bottom_height > 0.0)) {
+        if (checkCollision(x, eye_y, feet_y, z, d_x, d_y, d_z)) {
         } else {
 			if (fps_mode_){
 				displacement_ += pan_speed_ * glm::vec3(1.0f, 0.0f, 1.0f) * tangent_;
