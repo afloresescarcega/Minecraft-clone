@@ -33,9 +33,7 @@ GUI::GUI(GLFWwindow* window, PerlinNoise *pn_, int view_width, int view_height, 
     pn = pn_;
 }
 
-GUI::~GUI()
-{
-}
+GUI::~GUI() = default;
 
 void GUI::keyCallback(int key, int scancode, int action, int mods)
 {
